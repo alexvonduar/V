@@ -18,7 +18,12 @@ end
 if isempty(offsets)
     offsets = -height/2:height/2;
 end
-[N,edges] = histcounts(offsets,L);
+[maxValue, ~] = max(offsets);
+[minValue, ~] = min(offsets);
+edges = linspace(minValue, maxValue, L + 1)
+
+%[N,edges] = histcounts(offsets,L);
+N = histcounts(offsets, edges);
 [max_modes, H] = mnf_modes(N, 1);
 if isempty(max_modes)
     max_modes(1,:) = [1 size(N,2)];

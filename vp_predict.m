@@ -36,7 +36,11 @@ end
 dt = [b -a]*(inter_pts-A'*ones(1,size(inter_pts,2)));
 I = find(dt < 0);
 p(I) = -p(I);
-[N,edges] = histcounts(p,params.L_vp);
+[maxVal, ~] = max(p);
+[minVal, ~] = min(p);
+edges = linspace(minVal, maxVal, params.L_vp + 1);
+%[N,edges] = histcounts(p,params.L_vp);
+N = histcounts(p, edges);
 [max_modes, H] = mnf_modes(N,400);
 if isempty(max_modes)
     max_modes = [];
