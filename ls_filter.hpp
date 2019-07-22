@@ -96,7 +96,7 @@ void ls_filter(const double &thres_aligned,
             p1[1] -= C[1];
             p2[0] -= C[0];
             p2[1] -= C[1];
-            auto X1 = std::abs(p1[0] *  J[0] + p1[1] * J[1]);
+            auto X1 = std::abs(p1[0] * J[0] + p1[1] * J[1]);
             auto X2 = std::abs(p2[0] * J[0] + p2[1] * J[1]);
             if (X1 < thres_aligned and X2 < thres_aligned)
             {
