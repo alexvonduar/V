@@ -112,8 +112,13 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
         lambda << svdAm.matrixU()(0, 1), svdAm.matrixU()(1, 1);
         //vp_homo = [p,q]*lambda;
         auto vph = pq * lambda;
-        vp_homo = cv::Vec3d{vph(0, 0), vph(1, 0), vph(2, 0)};
-        vp_homo /= cv::norm(vp_homo);
+        auto x = vph(0, 0);
+        auto y = vph(1, 0);
+        auto z = vph(2, 0);
+        //vp_homo = cv::Vec3d{x, y, z};
+        auto norm = std::sqrt(x * x + y * y + z * z);
+        //vp_homo /= cv::norm(vp_homo);
+        vp_homo = cv::Vec3d{x / norm, y / norm, z / norm};
 
         //end
     }
@@ -122,7 +127,10 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
     //vp_homo = vp_homo * sign(vp_homo(3)+eps);
     if ((vp_homo[2] + std::nextafter(0., 1.)) < 0)
     {
-        vp_homo *= -1;
+        //vp_homo *= -1;
+        vp_homo[0] *= -1;
+        vp_homo[1] *= -1;
+        vp_homo[2] *= -1;
     }
 
     // [0 0 0] -> [0 1 0]

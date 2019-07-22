@@ -28,12 +28,15 @@ geometry_homo = bsxfun(@rdivide, geometry_homo, sqrt(sum(geometry_homo.^2, 1)));
 
 static inline void normalize(const cv::Vec2d &point, const int &width, const int &height, const double &focal, cv::Vec3d &npoint)
 {
-  cv::Vec2d center{double(width) / 2, double(height) / 2};
-  auto geometry_normalized = point - center;
-  geometry_normalized /= focal;
-  npoint = cv::Vec3d{geometry_normalized[0], geometry_normalized[1], 1};
+  //cv::Vec2d center{double(width) / 2, double(height) / 2};
+  //auto geometry_normalized = point - center;
+  //geometry_normalized /= focal;
+  npoint = cv::Vec3d{(point[0] - ((double)width / 2.)) / focal, (point[1] - ((double)height / 2.)) / focal, 1};
   auto norm = std::sqrt(npoint[0] * npoint[0] + npoint[1] * npoint[1] + 1);
-  npoint /= norm;
+  //npoint /= norm;
+  npoint[0] /= norm;
+  npoint[1] /= norm;
+  npoint[2] /= norm;
 }
 
 static inline void normalize(const cv::Vec4d &line, const int &width, const int &height, const double &focal, cv::Vec3d &nline)
@@ -47,10 +50,16 @@ static inline void normalize(const cv::Vec4d &line, const int &width, const int 
   auto geometry_homo = x1.cross(x2);
   if ((geometry_homo[1] + std::nextafter(0.0, 1.0)) < 0)
   {
-    geometry_homo *= -1;
+    //geometry_homo *= -1;
+    geometry_homo[0] *= -1;
+    geometry_homo[1] *= -1;
+    geometry_homo[2] *= -1;
   }
   auto norm = std::sqrt(geometry_homo[0] * geometry_homo[0] + geometry_homo[1] * geometry_homo[1] + geometry_homo[2] * geometry_homo[2]);
-  geometry_homo /= norm;
+  //geometry_homo /= norm;
+  geometry_homo[0] /= norm;
+  geometry_homo[1] /= norm;
+  geometry_homo[2] /= norm;
   nline = geometry_homo;
 }
 

@@ -92,10 +92,12 @@ void ls_filter(const double &thres_aligned,
             }
             cv::Vec2d p1{_seglines[j][0], _seglines[j][1]};
             cv::Vec2d p2{_seglines[j][2], _seglines[j][3]};
-            p1 -= C;
-            p2 -= C;
-            auto X1 = std::abs(p1.dot(J));
-            auto X2 = std::abs(p2.dot(J));
+            p1[0] -= C[0];
+            p1[1] -= C[1];
+            p2[0] -= C[0];
+            p2[1] -= C[1];
+            auto X1 = std::abs(p1[0] *  J[0] + p1[1] * J[1]);
+            auto X2 = std::abs(p2[0] * J[0] + p2[1] * J[1]);
             if (X1 < thres_aligned and X2 < thres_aligned)
             {
                 L0[j] = 0;
