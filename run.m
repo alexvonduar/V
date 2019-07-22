@@ -10,6 +10,7 @@ todo.benchmark = 0;
 todo.calibrate = 0;
 todo.ortho_rectify = 0;
 todo.save_ortho_images = 0;
+todo.debugfile = 1;
 
 %% plot options (0 if not plotted, figure number otherwise)
 plots.hvps = 1;%1;
@@ -54,10 +55,19 @@ for is = 1:size(imgDir,2)
         width = size(im, 2);
         height = size(im, 1);
         focal = max(width, height) / 2; % fake focal length
-        
+
+        if todo.debugfile
+            [pathstr, name, ext] = fileparts(imageList{i});
+            debug_fname = strcat(pathstr,'/',name,'_mat_debug.txt');
+            params.debug_fileid = fopen(debug_fname, 'w');
+        end
+
         % call V
         [hl, hvps, hvp_groups, z, z_group, ls] = V(im, width, height, focal, params);
         
+        if params.debug_fileid > 2
+            fclose(params.debug_fileid);
+        end
        
         % plot the results
         if plots.hvps

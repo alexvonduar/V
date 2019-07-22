@@ -14,5 +14,8 @@ swapIds = lines(:,1) > lines(:,3);
 temp = lines(swapIds,1:2);
 lines(swapIds,1:2) = lines(swapIds,3:4);
 lines(swapIds,3:4) = temp;
+%for i = 1:size(lines, 1)
+%    fprintf("%.1074g %.1074g %.1074g %.1074g", lines(i, 1), lines(i, 2), lines(i, 3), lines(i, 4));
+%end
 
 segments = line_to_segment(lines);

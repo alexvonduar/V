@@ -69,6 +69,15 @@ if plots.lsd
     drawnow;
 end
 
+if params.debug_fileid > 0
+    [~, I] = sort(lsd(:,1), 'ascend');
+    lsd = lsd(I,:);
+    fprintf(params.debug_fileid, "%d lsd results ----\n", size(lsd, 1));
+    for j = 1:size(lsd, 1)
+        fprintf(params.debug_fileid, "[%.149g, %.149g], [%.149g, %.149g]\n", lsd(j,1), lsd(j,2), lsd(j,3), lsd(j,4));
+    end
+end
+
 %% LS filtering
 
 thres_aligned =  max(width,height)/128.;
@@ -84,6 +93,13 @@ if plots.ls_filter
         plot([ls(j,1);ls(j,3)],[ls(j,2);ls(j,4)], 'Color',[cmap(j,1) cmap(j,2) cmap(j,3)],'LineWidth',2);
     end
     drawnow;
+end
+
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "%d filtered lsd results ----\n", size(ls, 1));
+    for j = 1:size(ls, 1)
+        fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g] homo [%.1074g, %.1074g, %.1074g]\n", ls(j,1), ls(j,2), ls(j,3), ls(j,4), ls_homo(1, j), ls_homo(2, j), ls_homo(3, j));
+    end
 end
 
 %% ZL and zenith rough predictions
@@ -108,6 +124,26 @@ if plots.zl
         plot([width/2;z(1)],[height/2;z(2)], 'Color',[cmap(i,1) cmap(i,2) cmap(i,3)],'LineWidth',3);
     end
     drawnow();
+end
+
+if params.debug_fileid > 0
+    num_z = length(zl);
+    fprintf(params.debug_fileid, "num zenith line pred: %d\n", num_z);
+    for i = 1:num_z
+        fprintf(params.debug_fileid, "zenith line prediction: %d ----\n", i - 1);
+        fprintf(params.debug_fileid, "zl: %f zl_homo: [%.1074g, %.1074g, %.1074g]\n", zl(i), zl_homo{i}(1), zl_homo{i}(2), zl_homo{i}(3));
+        num_z_homo_cand = size(z_homo_cand{i}, 2);
+        fprintf(params.debug_fileid, "num cand %d\n", num_z_homo_cand);
+        for j = 1:num_z_homo_cand
+            fprintf(params.debug_fileid, "cand %d: [%.1074g %.1074g %.1074g]\n", j - 1, z_homo_cand{i}(1, j), z_homo_cand{i}(2, j), z_homo_cand{i}(3, j));
+            num_group_cand = size(z_group_cand{i}, 2);
+            fprintf(params.debug_fileid, "group cand %d: ", num_group_cand);
+            for k = 1:num_group_cand
+                fprintf(params.debug_fileid, "%d ", z_group_cand{i}(j, k) - 1);
+            end
+            fprintf(params.debug_fileid, "\n");
+        end
+    end
 end
 
 %% choose the best zenith candidate based on the relevance of the predicted HLs

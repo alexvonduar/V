@@ -6,6 +6,6 @@ ngrps = size(vps_homo,2);
 for ig = 1:ngrps
   for it = 1:niters
     good_ids = find(abs(vps_homo(:,ig)'*lines_homo) < inlier_thr)';
-    vps_homo(:,ig) = lines_normal(lines_homo(:,good_ids), horizon_homo);
+    vps_homo(:,ig) = lines_normal(lines_homo(:,good_ids), params, horizon_homo);
   end
 end

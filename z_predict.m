@@ -4,7 +4,10 @@ function [zenith_homo, zengroupIds] = z_predict(lines_homo, zenith_line_homo, pa
 lines_tilt_ortho = atand(-lines_homo(2,:) ./ lines_homo(1,:)); 
 zenith_tilt = atand(-zenith_line_homo(2,1) ./ zenith_line_homo(1,1)); 
 verticalInd = find(abs(lines_tilt_ortho - zenith_tilt) < params.theta_z);
-zenith_homo_pred = lines_normal(lines_homo(:,verticalInd));
+zenith_homo_pred = lines_normal(lines_homo(:,verticalInd), params);
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "z_predict: %d vertical lines\n", size(verticalInd, 2));
+end
    
 %% refinement
 
