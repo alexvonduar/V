@@ -81,8 +81,11 @@ static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
         }
         //++count;
     }
+    if (params.debug_fileid != nullptr) {
+        fprintf(params.debug_fileid, "z_predict: %ld vertical lines\n", lines.size());
+    }
     cv::Vec3d zenith_homo_pred;
-    lines_normal(lines, cv::Mat(), zenith_homo_pred);
+    lines_normal(lines, cv::Mat(), params, zenith_homo_pred);
 
     // refinement
 

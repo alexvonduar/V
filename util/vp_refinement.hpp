@@ -36,7 +36,7 @@ static inline void vp_refinement(
                 }
             }
             //vps_homo(:,ig) = lines_normal(lines_homo(:,good_ids), horizon_homo);
-            lines_normal(good_lines, horizon_homo, vps_homo[ig]);
+            lines_normal(good_lines, horizon_homo, params, vps_homo[ig]);
 
             //end
         }

@@ -4,12 +4,14 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 
+#include "default_params.hpp"
+
 //function vp_homo = lines_normal(line_homo, b)
 // this function solve the homogeneous least squares prob
 // A = line_homo', find x s.t. min(||Ax||)
 // if b is given, then add a constraint: b'x = 0, which means x is forced to
 // be orthogonal to b. [Zhai et al. 2016]
-static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const cv::Mat &b, cv::Vec3d &vp_homo)
+static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const cv::Mat &b, const Params &params, cv::Vec3d &vp_homo)
 {
     Eigen::MatrixXd l(3, line_homo.size());
     for (int i = 0; i < line_homo.size(); ++i)
@@ -26,8 +28,53 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
 
         //[U, ~, ~] = svd(line_homo*line_homo');
         auto A = l * lt;
+        if (params.debug_fileid != nullptr)
+        {
+            fprintf(params.debug_fileid, "lines SVD: \n");
+            fprintf(params.debug_fileid, "l: \n");
+            for (int i = 0; i < l.rows(); ++i)
+            {
+                for (int j = 0; j < l.cols(); ++j)
+                {
+                    fprintf(params.debug_fileid, "%.1079g ", l(i, j));
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+            fprintf(params.debug_fileid, "lt: \n");
+            for (int i = 0; i < lt.rows(); ++i)
+            {
+                for (int j = 0; j < lt.cols(); ++j)
+                {
+                    fprintf(params.debug_fileid, "%.1079g ", lt(i, j));
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+            fprintf(params.debug_fileid, "A: \n");
+            for (int i = 0; i < A.rows(); ++i)
+            {
+                for (int j = 0; j < A.cols(); ++j)
+                {
+                    fprintf(params.debug_fileid, "%.1079g ", A(i, j));
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+        }
+
         Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullU);
         U = svd.matrixU();
+
+        if (params.debug_fileid != nullptr)
+        {
+            fprintf(params.debug_fileid, "U: \n");
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    fprintf(params.debug_fileid, "%.1079g ", U(i, j));
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+        }
 
         //vp_homo = U(:,3);
         vp_homo = cv::Vec3d{U(0, 2), U(1, 2), U(2, 2)};
@@ -87,13 +134,13 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
     }
 }
 
-static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const cv::Vec3d &b, cv::Vec3d &vp_homo)
+static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const cv::Vec3d &b, const Params &params, cv::Vec3d &vp_homo)
 {
     cv::Mat _b(3, 1, CV_64FC1);
     _b.at<double>(0, 0) = b[0];
     _b.at<double>(1, 0) = b[1];
     _b.at<double>(2, 0) = b[2];
-    lines_normal(line_homo, _b, vp_homo);
+    lines_normal(line_homo, _b, params, vp_homo);
 }
 
 #endif //_LINES_NORMAL_HPP_

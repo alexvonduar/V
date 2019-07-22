@@ -34,6 +34,18 @@ int V(const Params &params,
     std::vector<cv::Vec4d> lsd;
     // detect line segments
     lsd_detect(img, lsd);
+
+    if (params.debug_fileid != nullptr)
+    {
+        std::sort(lsd.begin(), lsd.end(), [](const auto &a, const auto &b) { return a[0] < b[0]; });
+        auto num_lines = lsd.size();
+        fprintf(params.debug_fileid, "%ld lsd results ----\n", num_lines);
+        for (int i = 0; i < num_lines; ++i)
+        {
+            fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g]\n", lsd[i][0], lsd[i][1], lsd[i][2], lsd[i][3]);
+        }
+    }
+
     if (0)
     {
         cv::Mat output;
@@ -69,6 +81,16 @@ int V(const Params &params,
         ls_homo.emplace_back(l_homo);
     }
 
+    if (params.debug_fileid != nullptr)
+    {
+        auto nfilted = ls.size();
+        fprintf(params.debug_fileid, "%ld filtered lsd results ----\n", nfilted);
+        for (int i = 0; i < nfilted; ++i)
+        {
+            fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g] homo [%.1074g, %.1074g, %.1074g]\n", ls[i][0], ls[i][1], ls[i][2], ls[i][3], ls_homo[i][0], ls_homo[i][1], ls_homo[i][2]);
+        }
+    }
+
     // ZL and zenith rough predictions
 
     // prediction of the zenith line
@@ -90,6 +112,30 @@ int V(const Params &params,
         zl_homo.emplace_back(z_homo);
         z_homo_cand.emplace_back(homo);
         z_group_cand.emplace_back(group);
+    }
+
+    if (params.debug_fileid != nullptr)
+    {
+        auto num_z = zl.size();
+        fprintf(params.debug_fileid, "num zenith line pred: %ld\n", num_z);
+        for (int i = 0; i < num_z; ++i)
+        {
+            fprintf(params.debug_fileid, "zenith line prediction: %d ----\n", i);
+            fprintf(params.debug_fileid, "zl: %f zl_homo: [%.1074g, %.1074g, %.1074g]\n", zl[i], zl_homo[i][0], zl_homo[i][1], zl_homo[i][2]);
+            auto num_z_homo_cand = z_homo_cand.size();
+            fprintf(params.debug_fileid, "num cand %ld\n", num_z_homo_cand);
+            for (int j = 0; j < num_z_homo_cand; ++j)
+            {
+                fprintf(params.debug_fileid, "cand %d: [%.1074g %.1074g %.1074g]\n", j, z_homo_cand[j][0], z_homo_cand[j][1], z_homo_cand[j][2]);
+                auto num_group_cand = z_group_cand[i].size();
+                fprintf(params.debug_fileid, "group cand %ld: ", num_group_cand);
+                for (int k = 0; k < num_group_cand; ++k)
+                {
+                    fprintf(params.debug_fileid, "%d ", z_group_cand[i][k]);
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+        }
     }
 
     // choose the best zenith candidate based on the relevance of the predicted HLs

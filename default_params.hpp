@@ -20,6 +20,7 @@ typedef struct
     int theta_horline;
     bool hvp_refinement;
     int refine_niters;
+    FILE * debug_fileid;
 } Params;
 
 static inline double score(const double &con, const double &x)
@@ -70,6 +71,7 @@ static inline void default_params(Params &params)
     params.theta_horline = 2;
     params.hvp_refinement = true;
     params.refine_niters = 3;
+    params.debug_fileid = nullptr;
 }
 
 #endif //_DEFAULT_PARAMS_HPP_

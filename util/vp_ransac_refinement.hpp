@@ -26,7 +26,7 @@ void vp_ransac_refinement(const std::vector<cv::Vec3d> &lines_homo, const Params
         inlier_lines.emplace_back(lines_homo[i]);
     }
     //zenith_homo = lines_normal(lines_homo(:,inlierId));
-    lines_normal(inlier_lines, cv::Mat(), zenith_homo);
+    lines_normal(inlier_lines, cv::Mat(), opt, zenith_homo);
 }
 
 #endif //_VP_RANSAC_REFINEMENT_HPP_
