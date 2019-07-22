@@ -54,7 +54,7 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
             {
                 for (int j = 0; j < A.cols(); ++j)
                 {
-                    fprintf(params.debug_fileid, "%.1079g ", A(i, j));
+                    fprintf(params.debug_fileid, "%.13g ", A(i, j));
                 }
                 fprintf(params.debug_fileid, "\n");
             }
@@ -70,7 +70,7 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    fprintf(params.debug_fileid, "%.1079g ", U(i, j));
+                    fprintf(params.debug_fileid, "%.13g ", U(i, j));
                 }
                 fprintf(params.debug_fileid, "\n");
             }

@@ -135,7 +135,7 @@ if params.debug_fileid > 0
         num_z_homo_cand = size(z_homo_cand{i}, 2);
         fprintf(params.debug_fileid, "num cand %d\n", num_z_homo_cand);
         for j = 1:num_z_homo_cand
-            fprintf(params.debug_fileid, "cand %d: [%.1074g %.1074g %.1074g]\n", j - 1, z_homo_cand{i}(1, j), z_homo_cand{i}(2, j), z_homo_cand{i}(3, j));
+            fprintf(params.debug_fileid, "cand %d: [%.13g %.13g %.13g]\n", j - 1, z_homo_cand{i}(1, j), z_homo_cand{i}(2, j), z_homo_cand{i}(3, j));
             num_group_cand = size(z_group_cand{i}, 2);
             fprintf(params.debug_fileid, "group cand %d: ", num_group_cand);
             for k = 1:num_group_cand
@@ -161,11 +161,39 @@ for i = 1:length(zl_homo)
     
     [~, results] = hl_score(modes_homo, ls_homo, z_homo_cand{i}, params);
  
+    if params.debug_fileid > 0
+      fprintf(params.debug_fileid, "%dth predicted hls -- \n", i);
+      n_modes = size(modes_homo, 2);
+      for j = 1:n_modes
+        fprintf(params.debug_fileid, "modes %d: [%f %f %f]\n", j - 1, modes_homo(1, j), modes_homo(2, j), modes_homo(3, j));
+      end
+      fprintf(params.debug_fileid, "results: score %f\n", results.score);
+      n_hvp = size(results.hvp_homo, 2);
+      for j = 1:n_hvp
+          fprintf(params.debug_fileid, "hvp %d: [%f %f %f]\n", j - 1, results.hvp_homo(1,j), results.hvp_homo(2,j), results.hvp_homo(3, j));
+      end
+      n_groups = size(results.hvp_groups, 1);
+      for j = 1:n_groups
+          fprintf(params.debug_fileid, "group %d: ", j - 1);
+          group = results.hvp_groups{j};
+          n = size(group, 1);
+          for k = 1:n
+              fprintf(params.debug_fileid, "%d ", group(k, 1) - 1);
+          end
+          fprintf(params.debug_fileid, "\n");
+      end
+    end
+
     % keep the zenith candidate with highest score
     if results.score > best_z_score
         best_z_cand = i;
         best_z_score = results.score;
     end
+end
+
+
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "best z: %d score: %f\n", best_z_cand - 1, best_z_score);
 end
 
 % zenith refinement (based on Zhang et al. method)

@@ -126,7 +126,7 @@ int V(const Params &params,
             fprintf(params.debug_fileid, "num cand %ld\n", num_z_homo_cand);
             for (int j = 0; j < num_z_homo_cand; ++j)
             {
-                fprintf(params.debug_fileid, "cand %d: [%.1074g %.1074g %.1074g]\n", j, z_homo_cand[j][0], z_homo_cand[j][1], z_homo_cand[j][2]);
+                fprintf(params.debug_fileid, "cand %d: [%.13g %.13g %.13g]\n", j, z_homo_cand[j][0], z_homo_cand[j][1], z_homo_cand[j][2]);
                 auto num_group_cand = z_group_cand[i].size();
                 fprintf(params.debug_fileid, "group cand %ld: ", num_group_cand);
                 for (int k = 0; k < num_group_cand; ++k)
@@ -162,6 +162,32 @@ int V(const Params &params,
         Candidate result;
         hl_score(modes_homo, ls_homo, z_homo_cand[i], params, result);
 
+        if (params.debug_fileid > 0)
+        {
+            fprintf(params.debug_fileid, "%dth predicted hls -- \n", i + 1);
+            auto n_modes = modes_homo.size();
+            for (int j = 0; j < n_modes; ++j)
+            {
+                fprintf(params.debug_fileid, "modes %d: [%f %f %f]\n", j, modes_homo[j][0], modes_homo[j][1], modes_homo[j][2]);
+            }
+            fprintf(params.debug_fileid, "results: score %f\n", result.sc);
+            for (int j = 0; j < result.hvp_homo.size(); ++j) {
+                fprintf(params.debug_fileid, "hvp %d: [%f %f %f]\n", j, result.hvp_homo[j][0], result.hvp_homo[j][1], result.hvp_homo[j][2]);
+            }
+            auto n_groups = result.hvp_groups.size();
+            for (int j = 0; j < n_groups; ++j)
+            {
+                fprintf(params.debug_fileid, "group %d: ", j);
+                auto &group = result.hvp_groups[j];
+                auto n = group.size();
+                for (int k = 0; k < n; ++k)
+                {
+                    fprintf(params.debug_fileid, "%d ", group[k]);
+                }
+                fprintf(params.debug_fileid, "\n");
+            }
+        }
+
         // keep the zenith candidate with highest score
         //if results.score > best_z_score
         if (result.sc > best_z_score)
@@ -171,6 +197,11 @@ int V(const Params &params,
             //end
         }
         //end
+    }
+
+    if (params.debug_fileid > 0)
+    {
+        fprintf(params.debug_fileid, "best z: %d score: %f\n", best_z_cand, best_z_score);
     }
 
     /// zenith refinement (based on Zhang et al. method)

@@ -28,20 +28,21 @@ if ~exist('b', 'var')
     fprintf(params.debug_fileid, "A: \n");
     for i = 1:size(A,1)
       for j = 1:size(A,2)
-        fprintf(params.debug_fileid, "%.1079g ", A(i, j));
+        fprintf(params.debug_fileid, "%.13g ", A(i, j));
       end
       fprintf(params.debug_fileid, "\n");
     end
   end
 
   [U, ~, ~] = svd(line_homo*line_homo');
+  U = U * sign(U(3, 3) + eps);
   vp_homo = U(:,3);
   
   if params.debug_fileid > 0
     fprintf(params.debug_fileid, "U: \n");
     for i = 1:3
       for j = 1:3
-        fprintf(params.debug_fileid, "%.1079g ", U(i, j));
+        fprintf(params.debug_fileid, "%.13g ", U(i, j));
       end
       fprintf(params.debug_fileid, "\n");
     end
