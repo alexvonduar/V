@@ -32,14 +32,14 @@ static inline void lsd_detect(const cv::Mat &img, std::vector<cv::Vec4d> &lines)
         auto y1 = out->values[n * i + 1];
         auto x2 = out->values[n * i + 2];
         auto y2 = out->values[n * i + 3];
-        if (x1 < x2)
+        if ((x2 < x1) or ((x1 == x2) and (y2 < y1)))
         {
-            cv::Vec4d line{x1, y1, x2, y2};
+            cv::Vec4d line{x2, y2, x1, y1};
             lines.emplace_back(line);
         }
         else
         {
-            cv::Vec4d line{x2, y2, x1, y1};
+            cv::Vec4d line{x1, y1, x2, y2};
             lines.emplace_back(line);
         }
     }

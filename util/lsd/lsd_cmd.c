@@ -1014,8 +1014,18 @@ int main(int argc, char ** argv)
   if( output == NULL ) error("Error: unable to open ASCII output file.");
   for(i=0;i<out->size;i++)
     {
+      double x1 = out->values[i * out->dim];
+      double y1 = out->values[i * out->dim + 1];
+      double x2 = out->values[i * out->dim + 2];
+      double y2 = out->values[i * out->dim + 3];
+      if ((x2 < x1) || ((x1 == x2) && (y2 < y1))) {
+        out->values[i * out->dim] = x2;
+        out->values[i * out->dim + 1] = y2;
+        out->values[i * out->dim + 2] = x1;
+        out->values[i * out->dim + 3] = y1;
+      }
       for(j=0;j<out->dim;j++)
-        fprintf(output,"%f ",out->values[i*out->dim+j]);
+        fprintf(output,"%.1074g ",out->values[i*out->dim+j]);
       fprintf(output,"\n");
     }
   if( output != stdout && fclose(output) == EOF ) /* close file if needed */
