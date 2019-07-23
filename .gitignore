@@ -1,0 +1,6 @@
+test_images/*.txt
+test_images/*.pgm
+.vscode
+build
+util/lsd/lsd
+
