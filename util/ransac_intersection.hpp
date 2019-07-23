@@ -89,13 +89,14 @@ void ransac_intersection(const std::vector<cv::Vec3d> &lines_homo, const RANSAC_
     }
 
     //inlrNum = zeros(1,iterNum);
-    std::vector<int> inlrNum(iterNum, 0);
+    std::vector<int> inlrNum; //(iterNum, 0);
+    inlrNum.reserve(iterNum);
     //fLib = cell(1,iterNum);
     std::vector<cv::Vec3d> fLib;
     fLib.reserve(iterNum);
 
     //for p = 1:iterNum
-    for (int p = 0; p < iterNum; ++p)
+    for (int p = 0; p < iterNum; )//++p)
     {
         // 1. fit using random points
         //M = randIndex(lines_homo, ptNum, minPtNum);
@@ -118,15 +119,20 @@ void ransac_intersection(const std::vector<cv::Vec3d> &lines_homo, const RANSAC_
         }
 
         //inlrNum(p) = length(inlier1);
-        inlrNum[p] = inlier1.size();
+        //inlrNum[p] = inlier1.size();
         //if length(inlier1) < thInlr, continue; end
-        if (inlrNum[p] < thInlr)
+        if (inlier1.size() < thInlr)
         {
             continue;
         }
-        //fLib{p} = M;
-        fLib.emplace_back(M);
-        //end
+        else
+        {
+            ++p;
+            inlrNum.emplace_back(inlier1.size());
+            //fLib{p} = M;
+            fLib.emplace_back(M);
+            //end
+        }
     }
 
     // 3. choose the coef with the most inliers

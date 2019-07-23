@@ -11,7 +11,10 @@ static inline cv::Vec3d line_hmg_from_two_points(const cv::Vec2d &p1, const cv::
     //v2 = double([p2(1);p2(2);1]);
     cv::Vec3d v2{p2[0], p2[1], 1};
     auto l = v1.cross(v2);
-    l /= std::sqrt(l[0] * l[0] + l[1] * l[1]);
+    auto norm = std::sqrt(l[0] * l[0] + l[1] * l[1]);
+    l[0] /= norm;
+    l[1] /= norm;
+    l[2] /= norm;
     return l;
 }
 

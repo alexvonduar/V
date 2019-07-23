@@ -29,7 +29,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
                                 const cv::Vec3d &horizon_homo,
                                 const Params &params,
                                 std::vector<cv::Vec3d> &horvps_homo,
-                                std::vector<std::vector<int>>& horgroups
+                                std::vector<std::vector<int>> &horgroups
 
 )
 {
@@ -241,7 +241,8 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         //[scores, sortIds] = sort(scores, 'descend');
         std::vector<std::pair<double, int>> index;
         index.reserve(scores.size());
-        for (int i = 0; i < scores.size(); ++i) {
+        for (int i = 0; i < scores.size(); ++i)
+        {
             index.emplace_back(std::pair<double, int>{scores[i], i});
         }
         std::sort(index.begin(), index.end(), [](const auto &a, const auto &b) { return a.first > b.first; });

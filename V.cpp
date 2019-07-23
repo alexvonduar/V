@@ -171,7 +171,8 @@ int V(const Params &params,
                 fprintf(params.debug_fileid, "modes %d: [%f %f %f]\n", j, modes_homo[j][0], modes_homo[j][1], modes_homo[j][2]);
             }
             fprintf(params.debug_fileid, "results: score %f\n", result.sc);
-            for (int j = 0; j < result.hvp_homo.size(); ++j) {
+            for (int j = 0; j < result.hvp_homo.size(); ++j)
+            {
                 fprintf(params.debug_fileid, "hvp %d: [%f %f %f]\n", j, result.hvp_homo[j][0], result.hvp_homo[j][1], result.hvp_homo[j][2]);
             }
             auto n_groups = result.hvp_groups.size();
