@@ -74,6 +74,30 @@ static inline void hl_predict(const std::vector<cv::Vec4d> &seglines,
     std::vector<double> edges;
     histcounts(offsets, L, nullptr, N, edges);
 
+    if (params.debug_fileid != nullptr)
+    {
+        auto nhist = N.cols;
+        fprintf(params.debug_fileid, "hist %d: ", nhist);
+        for (int i = 0; i < nhist; ++i) {
+            fprintf(params.debug_fileid, "%f ", N.at<double>(0, i));
+        }
+        fprintf(params.debug_fileid, "\n");
+        auto noff = offsets.size();
+        fprintf(params.debug_fileid, "offsets %ld: ", noff);
+        for (int i = 0; i < noff; ++i)
+        {
+            fprintf(params.debug_fileid, "%f ", offsets[i]);
+        }
+        fprintf(params.debug_fileid, "\n");
+        auto n = edges.size();
+        fprintf(params.debug_fileid, "edges %ld: ", n);
+        for (int i = 0; i < n; ++i)
+        {
+            fprintf(params.debug_fileid, "%f ", edges[i]);
+        }
+        fprintf(params.debug_fileid, "\n");
+    }
+
     //[max_modes, H] = mnf_modes(N, 1);
     std::vector<std::pair<int, int>> max_modes;
     //std::vector<double> H;

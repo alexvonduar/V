@@ -31,12 +31,22 @@ static inline void hl_score(
     std::vector<int> nhvps;
     nhvps.reserve(hl_samp.size());
     //for i = 1:size(hl_samp,2)
+    int count = 0;
     for (const auto &samp : hl_samp)
     {
         //helpfulIds = filter_verhor_lines(ls_homo, z_homo, params);
         std::vector<int> helpfulIds;
         filter_verhor_lines(ls_homo, z_homo, params, helpfulIds);
         //--initialIds = 1:numel(helpfulIds);
+        if (params.debug_fileid != nullptr)
+        {
+            fprintf(params.debug_fileid, "%d helpful ids: ", count);
+            for (const auto &j : helpfulIds)
+            {
+                fprintf(params.debug_fileid, "%d ", j);
+            }
+            fprintf(params.debug_fileid, "\n");
+        }
         Candidate candidate;
         //candidates(i).horizon_homo = hl_samp(:,i);
         candidate.horizon_homo = samp;
@@ -68,6 +78,7 @@ static inline void hl_score(
         nhvps.emplace_back(candidate.hvp_homo.size());
         candidates.emplace_back(candidate);
         //end
+        ++count;
     }
 
     // decide the horizon line

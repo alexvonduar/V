@@ -25,6 +25,13 @@ void vp_ransac_refinement(const std::vector<cv::Vec3d> &lines_homo, const Params
     {
         inlier_lines.emplace_back(lines_homo[i]);
     }
+    if (opt.debug_fileid != nullptr) {
+        fprintf(opt.debug_fileid, "ransac inlier %ld: ", inlierId.size());
+        for (const auto& i: inlierId) {
+            fprintf(opt.debug_fileid, "%d ", i);
+        }
+        fprintf(opt.debug_fileid, "\n");
+    }
     //zenith_homo = lines_normal(lines_homo(:,inlierId));
     lines_normal(inlier_lines, cv::Mat(), opt, zenith_homo);
 }

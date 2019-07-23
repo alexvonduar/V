@@ -54,6 +54,14 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         inter_homo.emplace_back(inter);
     }
 
+    if (params.debug_fileid != nullptr)
+    {
+        for (int i = 0; i < inter_homo.size(); ++i)
+        {
+            fprintf(params.debug_fileid, "inter: [%f %f] [%f %f %f]\n", inter_pts[i][0], inter_pts[i][1], inter_homo[i][0], inter_homo[i][1], inter_homo[i][2]);
+        }
+    }
+
     // compute the MMMs of the coordinate histogtam
 
     //max_modes = [];
@@ -124,6 +132,16 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         {
             p.emplace_back(_p);
         }
+    }
+
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "p: ");
+        for (int i = 0; i < p.size(); ++i)
+        {
+            fprintf(params.debug_fileid, "%f ", p[i]);
+        }
+        fprintf(params.debug_fileid, "\n");
     }
 
     //[N,edges] = histcounts(p,params.L_vp);
@@ -207,6 +225,36 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         //horgroups{end+1,1} =  edgesId;
         horgroups.emplace_back(group);
         //end
+
+        if (params.debug_fileid != nullptr)
+        {
+            fprintf(params.debug_fileid, "max %d: %f p_i %f\n", j, m, p_i);
+            fprintf(params.debug_fileid, "vpId: ");
+            //for k = 1:size(vpId)
+            fprintf(params.debug_fileid, "%d ", vpId);
+            //end
+            fprintf(params.debug_fileid, "\n");
+        }
+    }
+
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "edges: ");
+        for (const auto &edge : edges)
+        {
+            fprintf(params.debug_fileid, "%f ", edge);
+        }
+        fprintf(params.debug_fileid, "\n");
+        fprintf(params.debug_fileid, "N: ");
+        for (int k = 0; k < N.cols; ++k)
+        {
+            fprintf(params.debug_fileid, "%f ", N.at<double>(0, k));
+        }
+        fprintf(params.debug_fileid, "\n");
+        for (int k = 0; k < max_modes.size(); ++k)
+        {
+            fprintf(params.debug_fileid, "max mode %d: %d %d %f\n", k, max_modes[k].first, max_modes[k].second, H[k]);
+        }
     }
 
     double sc = 0;

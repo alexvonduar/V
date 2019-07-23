@@ -4,6 +4,13 @@ candidates = repmat(struct(), size(hl_samp,2),1);
 nhvps = [];
 for i = 1:size(hl_samp,2)
     helpfulIds = filter_verhor_lines(ls_homo, z_homo, params);
+    if params.debug_fileid > 0
+        fprintf(params.debug_fileid, "%d helpful ids: ", i - 1);
+        for j = 1:length(helpfulIds)
+            fprintf(params.debug_fileid, "%d ", helpfulIds(j) - 1);
+        end
+        fprintf(params.debug_fileid, "\n");
+    end
     initialIds = 1:numel(helpfulIds);
     candidates(i).horizon_homo = hl_samp(:,i);
     [candidates(i).sc, candidates(i).hvp_homo, hvp_groups] = vp_predict(ls_homo(:,helpfulIds), initialIds, candidates(i).horizon_homo, params);

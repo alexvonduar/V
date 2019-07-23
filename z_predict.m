@@ -6,7 +6,12 @@ zenith_tilt = atand(-zenith_line_homo(2,1) ./ zenith_line_homo(1,1));
 verticalInd = find(abs(lines_tilt_ortho - zenith_tilt) < params.theta_z);
 zenith_homo_pred = lines_normal(lines_homo(:,verticalInd), params);
 if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "z_predict: zenith tilt %f\n", zenith_tilt);
     fprintf(params.debug_fileid, "z_predict: %d vertical lines\n", size(verticalInd, 2));
+    for i = 1:size(verticalInd, 2)
+        fprintf(params.debug_fileid, "%d ", verticalInd(1, i) - 1);
+    end
+    fprintf(params.debug_fileid, "\n");
 end
    
 %% refinement

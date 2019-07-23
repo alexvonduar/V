@@ -8,7 +8,7 @@ if ~exist('b', 'var')
   
   A = line_homo*line_homo';
 
-  if params.debug_fileid > 0
+  if 0 && params.debug_fileid > 0
     fprintf(params.debug_fileid, "lines SVD: \n");
     fprintf(params.debug_fileid, "l: \n");
     for i = 1:size(line_homo,1)
@@ -35,14 +35,14 @@ if ~exist('b', 'var')
   end
 
   [U, ~, ~] = svd(line_homo*line_homo');
-  U = U * sign(U(3, 3) + eps);
   vp_homo = U(:,3);
   
   if params.debug_fileid > 0
+    s = sign(U(3, 3) + eps);
     fprintf(params.debug_fileid, "U: \n");
     for i = 1:3
       for j = 1:3
-        fprintf(params.debug_fileid, "%.13g ", U(i, j));
+        fprintf(params.debug_fileid, "%.13g ", s * U(i, j));
       end
       fprintf(params.debug_fileid, "\n");
     end

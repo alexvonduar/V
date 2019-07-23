@@ -69,7 +69,7 @@ if plots.lsd
     drawnow;
 end
 
-if params.debug_fileid > 0
+if 0 && params.debug_fileid > 0
     [~, I] = sort(lsd(:,1), 'ascend');
     lsd = lsd(I,:);
     fprintf(params.debug_fileid, "%d lsd results ----\n", size(lsd, 1));
@@ -95,7 +95,7 @@ if plots.ls_filter
     drawnow;
 end
 
-if params.debug_fileid > 0
+if 0 && params.debug_fileid > 0
     fprintf(params.debug_fileid, "%d filtered lsd results ----\n", size(ls, 1));
     for j = 1:size(ls, 1)
         fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g] homo [%.1074g, %.1074g, %.1074g]\n", ls(j,1), ls(j,2), ls(j,3), ls(j,4), ls_homo(1, j), ls_homo(2, j), ls_homo(3, j));
@@ -194,16 +194,46 @@ end
 
 if params.debug_fileid > 0
     fprintf(params.debug_fileid, "best z: %d score: %f\n", best_z_cand - 1, best_z_score);
+
+    %fprintf(params.debug_fileid, "%d filtered lsd results2 ----\n", size(ls, 1));
+    %for j = 1:size(ls, 1)
+    %    fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g] homo [%.1074g, %.1074g, %.1074g]\n", ls(j,1), ls(j,2), ls(j,3), ls(j,4), ls_homo(1, j), ls_homo(2, j), ls_homo(3, j));
+    %end
 end
 
 % zenith refinement (based on Zhang et al. method)
 [z_homo_cand{best_z_cand}, z_group_cand{best_z_cand}] = z_predict(ls_homo, zl_homo{best_z_cand}, params, 1); 
 
+if params.debug_fileid > 0
+    homo = z_homo_cand{best_z_cand};
+    fprintf(params.debug_fileid, "refiend best z: [%f %f %f]\n", homo(1, 1), homo(2, 1), homo(3, 1));
+    fprintf(params.debug_fileid, "refined groups: ");
+    group = z_group_cand{best_z_cand};
+    for i = 1:size(group, 2)
+        fprintf(params.debug_fileid, "%d ", group(1, i) - 1);
+    end
+    fprintf(params.debug_fileid, "\n");
+end
+
 % HL prediction
 [modes_homo, modes_offset, modes_left, modes_right, H] = hl_predict(lsd, z_homo_cand{best_z_cand}, u0, v0, width, height, focal, params);
 
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "hl prediction --\n");
+    for i = 1:size(modes_homo, 2)
+        fprintf(params.debug_fileid, "%d: [%f %f %f] offset %f left %f right %f H %f\n", i - 1, modes_homo(1, i), modes_homo(2, i), modes_homo(3, i), modes_offset(i), modes_left(i), modes_right(i), H(i));
+    end
+end
+
 % HL sampling
 [samp_homo, samp_left, samp_right] = hl_sample(z_homo_cand{best_z_cand}, modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params);
+
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "hl sampling --\n");
+    for i = 1:size(samp_homo, 2)
+        fprintf(params.debug_fileid, "%d: [%f %f %f] left %f right %f\n", i - 1, samp_homo(1, i), samp_homo(2, i), samp_homo(3, i), samp_left(i), samp_right(i));
+    end
+end
 
 % plot the results
 if plots.hl_samples
@@ -235,4 +265,25 @@ hvps = unnormalize(results.hvp_homo, width, height, focal, 0);
 hvp_groups = results.hvp_groups;
 z = unnormalize(z_homo_cand{best_z_cand}, width, height, focal, 0);
 z_group = z_group_cand{best_z_cand};
+
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "z: [%f %f] [%f %f %f]\n", z(1), z(2), z_homo_cand{best_z_cand}(1), z_homo_cand{best_z_cand}(2), z_homo_cand{best_z_cand}(3));
+    fprintf(params.debug_fileid, "z group: ");
+    for i = 1:length(z_group)
+        fprintf(params.debug_fileid, "%d ", z_group(i) - 1);
+    end
+    fprintf(params.debug_fileid, "\n");
+    hvp_count = size(hvps,1);
+    for v = 1:hvp_count
+        fprintf(params.debug_fileid, "%d vp: [%f %f]\n", v - 1, hvps(v, 1), hvps(v, 2));
+    end
+    for j = 1:numel(hvp_groups)
+        hg = hvp_groups{j};
+        fprintf(params.debug_fileid, "%d vp group: ", j - 1);
+        for k = 1:length(hg)
+            fprintf(params.debug_fileid, "%d ", hg(k) - 1);
+        end
+        fprintf(params.debug_fileid, "\n");
+    end
+end
 end

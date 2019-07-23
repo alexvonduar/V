@@ -20,10 +20,32 @@ if isempty(offsets)
 end
 [maxValue, ~] = max(offsets);
 [minValue, ~] = min(offsets);
-edges = linspace(minValue, maxValue, L + 1)
+edges = linspace(minValue, maxValue, L + 1);
+
 
 %[N,edges] = histcounts(offsets,L);
 N = histcounts(offsets, edges);
+if params.debug_fileid > 0
+    n = length(N);
+    fprintf(params.debug_fileid, "hist %d: ", n);
+    for i = 1:n
+        fprintf(params.debug_fileid, "%f ", N(1, i));
+    end
+    fprintf(params.debug_fileid, "\n");
+    n = length(offsets);
+    fprintf(params.debug_fileid, "offsets %d: ", n);
+    for i = 1:n
+        fprintf(params.debug_fileid, "%f ", offsets(1, i));
+    end
+    fprintf(params.debug_fileid, "\n");
+    n = size(edges, 2);
+    fprintf(params.debug_fileid, "edges %d: ", n);
+    for i = 1:n
+        fprintf(params.debug_fileid, "%f ", edges(1, i));
+    end
+    fprintf(params.debug_fileid, "\n");
+end
+
 [max_modes, H] = mnf_modes(N, 1);
 if isempty(max_modes)
     max_modes(1,:) = [1 size(N,2)];

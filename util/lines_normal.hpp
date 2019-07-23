@@ -27,8 +27,22 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
     {
 
         //[U, ~, ~] = svd(line_homo*line_homo');
+#if 1
         auto A = l * lt;
-        if (params.debug_fileid != nullptr)
+#else  // compute l*l' by hand to verify Eigen matrix multiplication
+        Eigen::MatrixXd A(3, 3);
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                auto N = line_homo.size();
+                long double s = 0;
+                for (int k = 0; k < N; ++k) {
+                    s += line_homo[k][i] * line_homo[k][j];
+                }
+                A(i, j) = s;
+            }
+        }
+#endif
+        if (0 and params.debug_fileid != nullptr)
         {
             fprintf(params.debug_fileid, "lines SVD: \n");
             fprintf(params.debug_fileid, "l: \n");
@@ -65,12 +79,16 @@ static inline void lines_normal(const std::vector<cv::Vec3d> &line_homo, const c
 
         if (params.debug_fileid != nullptr)
         {
+            auto sign = 1;
+            if (U(2, 2) < 0) {
+                sign = -1;
+            }
             fprintf(params.debug_fileid, "U: \n");
             for (int i = 0; i < 3; ++i)
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    fprintf(params.debug_fileid, "%.13g ", U(i, j));
+                    fprintf(params.debug_fileid, "%.13g ", U(i, j) * sign);
                 }
                 fprintf(params.debug_fileid, "\n");
             }

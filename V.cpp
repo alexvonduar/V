@@ -35,7 +35,7 @@ int V(const Params &params,
     // detect line segments
     lsd_detect(img, lsd);
 
-    if (params.debug_fileid != nullptr)
+    if (0 and params.debug_fileid != nullptr)
     {
         std::sort(lsd.begin(), lsd.end(), [](const auto &a, const auto &b) { return a[0] < b[0]; });
         auto num_lines = lsd.size();
@@ -81,7 +81,7 @@ int V(const Params &params,
         ls_homo.emplace_back(l_homo);
     }
 
-    if (params.debug_fileid != nullptr)
+    if (0 and params.debug_fileid != nullptr)
     {
         auto nfilted = ls.size();
         fprintf(params.debug_fileid, "%ld filtered lsd results ----\n", nfilted);
@@ -203,11 +203,30 @@ int V(const Params &params,
     if (params.debug_fileid > 0)
     {
         fprintf(params.debug_fileid, "best z: %d score: %f\n", best_z_cand, best_z_score);
+
+        //auto nfilted = ls.size();
+        //fprintf(params.debug_fileid, "%ld filtered lsd results2 ----\n", nfilted);
+        //for (int i = 0; i < nfilted; ++i)
+        //{
+        //    fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g] homo [%.1074g, %.1074g, %.1074g]\n", ls[i][0], ls[i][1], ls[i][2], ls[i][3], ls_homo[i][0], ls_homo[i][1], ls_homo[i][2]);
+        //}
     }
 
     /// zenith refinement (based on Zhang et al. method)
     //[z_homo_cand{best_z_cand}, z_group_cand{best_z_cand}] = z_predict(ls_homo, zl_homo{best_z_cand}, params, 1);
     z_predict(ls_homo, zl_homo[best_z_cand], params, true, z_homo_cand[best_z_cand], z_group_cand[best_z_cand]);
+
+    if (params.debug_fileid > 0)
+    {
+        fprintf(params.debug_fileid, "refiend best z: [%f %f %f]\n", z_homo_cand[best_z_cand][0], z_homo_cand[best_z_cand][1], z_homo_cand[best_z_cand][2]);
+        fprintf(params.debug_fileid, "refined groups: ");
+        auto n = z_group_cand[best_z_cand].size();
+        for (int i = 0; i < n; ++i)
+        {
+            fprintf(params.debug_fileid, "%d ", z_group_cand[best_z_cand][i]);
+        }
+        fprintf(params.debug_fileid, "\n");
+    }
 
     /// HL prediction
     //[modes_homo, modes_offset, modes_left, modes_right, H] = hl_predict(lsd, z_homo_cand{best_z_cand}, u0, v0, width, height, focal, params);
@@ -217,6 +236,14 @@ int V(const Params &params,
     std::vector<double> modes_right;
     std::vector<double> H;
     hl_predict(lsd, z_homo_cand[best_z_cand], u0, v0, width, height, focal, params, modes_homo, modes_offset, modes_left, modes_right, H);
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "hl prediction --\n");
+        for (int i = 0; i < modes_homo.size(); ++i)
+        {
+            fprintf(params.debug_fileid, "%d: [%f %f %f] offset %f left %f right %f H %f\n", i, modes_homo[i][0], modes_homo[i][1], modes_homo[i][2], modes_offset[i], modes_left[i], modes_right[i], H[i]);
+        }
+    }
 
     /// HL sampling
     //[samp_homo, samp_left, samp_right] = hl_sample(z_homo_cand{best_z_cand}, modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params);
@@ -224,6 +251,15 @@ int V(const Params &params,
     std::vector<double> samp_left;
     std::vector<double> samp_right;
     hl_sample(z_homo_cand[best_z_cand], modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params, samp_homo, samp_left, samp_right);
+
+    if (params.debug_fileid > 0)
+    {
+        fprintf(params.debug_fileid, "hl sampling --\n");
+        for (int i = 0; i < samp_homo.size(); ++i)
+        {
+            fprintf(params.debug_fileid, "%d: [%f %f %f] left %f right %f\n", i, samp_homo[i][0], samp_homo[i][1], samp_homo[i][2], samp_left[i], samp_right[i]);
+        }
+    }
 
     /// HL scoring
     //[hl_homo, results] = hl_score(samp_homo, ls_homo, z_homo_cand{best_z_cand}, params);
@@ -250,6 +286,31 @@ int V(const Params &params,
     //std::vector<int> z_group;
     //z_group = z_group_cand{best_z_cand};
     z_group = z_group_cand[best_z_cand];
+
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "z: [%f %f] [%f %f %f]\n", z[0], z[1], z_homo_cand[best_z_cand][0], z_homo_cand[best_z_cand][1], z_homo_cand[best_z_cand][2]);
+        fprintf(params.debug_fileid, "z group: ");
+        for (int i = 0; i < z_group.size(); ++i)
+        {
+            fprintf(params.debug_fileid, "%d ", z_group[i]);
+        }
+        fprintf(params.debug_fileid, "\n");
+        auto hvp_count = hvps.size();
+        for (int v = 0; v < hvp_count; ++v)
+        {
+            fprintf(params.debug_fileid, "%d vp: [%f %f]\n", v, hvps[v][0], hvps[v][1]);
+        }
+        for (int j = 0; j < hvp_groups.size(); ++j)
+        {
+            fprintf(params.debug_fileid, "%d vp group: ", j);
+            for (int k = 0; k < hvp_groups[j].size(); ++k)
+            {
+                fprintf(params.debug_fileid, "%d ", hvp_groups[j][k]);
+            }
+            fprintf(params.debug_fileid, "\n");
+        }
+    }
 
     return 0;
 }

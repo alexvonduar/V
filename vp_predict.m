@@ -6,6 +6,12 @@ inter_homo = bsxfun(@rdivide, inter_homo, sqrt(sum(inter_homo.^2,1)));
 inter_homo = bsxfun(@times, inter_homo, sign(inter_homo(3,:)+ eps));
 inter_pts = bsxfun(@rdivide, inter_homo(1:2,:), inter_homo(3,:));
 
+if params.debug_fileid > 0
+for i = 1:size(inter_pts, 2)
+    fprintf(params.debug_fileid, "inter: [%f %f] [%f %f %f]\n", inter_pts(1, i), inter_pts(2, i), inter_homo(1, i), inter_homo(2, i), inter_homo(3, i));
+end
+end
+
 %% compute the MMMs of the coordinate histogtam
 
 max_modes = [];
@@ -36,6 +42,13 @@ end
 dt = [b -a]*(inter_pts-A'*ones(1,size(inter_pts,2)));
 I = find(dt < 0);
 p(I) = -p(I);
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "p: ");
+for i = 1:size(p, 2)
+    fprintf(params.debug_fileid, "%f ", p(i));
+end
+fprintf(params.debug_fileid, "\n");
+end
 [maxVal, ~] = max(p);
 [minVal, ~] = min(p);
 edges = linspace(minVal, maxVal, params.L_vp + 1);
@@ -66,6 +79,29 @@ for i = 1:size(max_modes,1)
     scores(end+1) = m;
     edgesId = intersect(find(p >= edges(a)),find(p <= edges(b+1)));
     horgroups{end+1,1} =  edgesId;
+    if params.debug_fileid > 0
+        fprintf(params.debug_fileid, "max %d: %f p_i %f\n", j - 1, m, p_i);
+        fprintf(params.debug_fileid, "vpId: ");
+        for k = 1:size(vpId)
+            fprintf(params.debug_fileid, "%d ", vpId(k) - 1);
+        end
+        fprintf(params.debug_fileid, "\n");
+    end
+end
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "edges: ");
+for i = 1:size(edges, 2)
+    fprintf(params.debug_fileid, "%f ", edges(i));
+end
+fprintf(params.debug_fileid, "\n");
+    fprintf(params.debug_fileid, "N: ");
+    for i = 1:size(N, 2)
+        fprintf(params.debug_fileid, "%f ", N(1, i))
+    end
+    fprintf(params.debug_fileid, "\n");
+    for i = 1:size(max_modes,1)
+        fprintf(params.debug_fileid, "max mode %d: %d %d %f\n", i - 1, max_modes(i,1) - 1, max_modes(i, 2) - 1, H(i));
+    end
 end
 
 if isempty(max_modes)

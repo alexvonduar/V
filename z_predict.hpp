@@ -69,7 +69,9 @@ static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
     auto zenith_tilt = atand(-zenith_line_homo[1], zenith_line_homo[0]);
     std::vector<cv::Vec3d> lines;
     lines.reserve(lines_homo.size());
-    //int count = 0;
+    std::vector<int> validIds;
+    validIds.reserve(lines_homo.size());
+    int count = 0;
     for (const auto &l : lines_homo)
     {
         auto lines_tilt_ortho = atand(-l[1], l[0]);
@@ -78,14 +80,20 @@ static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
         {
             //std::cout << "line: " << count << " select" << std::endl;
             lines.emplace_back(l);
+            validIds.emplace_back(count);
         }
-        //++count;
+        ++count;
     }
 
     cv::Vec3d zenith_homo_pred;
     lines_normal(lines, cv::Mat(), params, zenith_homo_pred);
     if (params.debug_fileid != nullptr) {
+        fprintf(params.debug_fileid, "z_predict: zenith tilt %f\n", zenith_tilt);
         fprintf(params.debug_fileid, "z_predict: %ld vertical lines\n", lines.size());
+        for (int i = 0; i < validIds.size(); ++i) {
+            fprintf(params.debug_fileid, "%d ", validIds[i]);
+        }
+        fprintf(params.debug_fileid, "\n");
     }
 
     // refinement
