@@ -59,6 +59,11 @@ static inline void histcounts(
     hist = hist.reshape(1, hist.cols);
 
     hist.convertTo(hist, CV_64FC1);
+    auto shist = cv::sum(hist);
+    if (shist[0] + 1 == v.size()) {
+        hist.at<double>(0, nbins - 1) += 1;
+    }
+    assert(cv::sum(hist)[0] == v.size());
 
     for (int i = 0; i < nbins; ++i)
     {
