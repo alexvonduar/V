@@ -166,7 +166,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         auto m = N.at<double>(0, mode.first);
         auto j = mode.first;
         //[m,j] = max(Ni);
-        for (int i = j + 1; i < mode.second; ++i)
+        for (int i = j + 1; i <= mode.second; ++i)
         {
             auto _m = N.at<double>(0, i);
             if (_m > m)

@@ -170,7 +170,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
         auto b = mode.second;
         auto max = N.at<double>(0, a);
         auto max_id = a;
-        for (auto i = a + 1; i < b; ++i)
+        for (auto i = a + 1; i <= b; ++i)
         {
             auto _max = N.at<double>(0, i);
             if (_max > max)

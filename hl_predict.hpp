@@ -131,7 +131,7 @@ static inline void hl_predict(const std::vector<cv::Vec4d> &seglines,
         //[~,bin] = max(Ni);
         double max = N.at<double>(0, mode.first);
         int bin = mode.first;
-        for (int i = bin + 1; i < mode.second; ++i)
+        for (int i = bin + 1; i <= mode.second; ++i)
         {
             if (N.at<double>(0, i) > max)
             {
