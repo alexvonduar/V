@@ -142,7 +142,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
     //end
     if (max_modes.size() == 0)
     {
-        max_modes.emplace_back(std::pair<int, int>{0, N.cols});
+        max_modes.emplace_back(std::pair<int, int>{0, N.cols - 1});
         H.emplace_back(0);
     }
     else
