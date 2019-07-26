@@ -313,5 +313,25 @@ int V(const Params &params,
         }
     }
 
+    double focal_calbrated;
+    std::vector<cv::Vec2d> manh_vps;
+    calibrate(z, hvps, width, height, focal, manh_vps);
+    assert(focal_calbrated > 0);
+
+    cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
+    K.at<double>(0, 0) = focal;
+    K.at<double>(1, 1) = focal;
+    K.at<double>(0, 2) = (double)width / 2;
+    K.at<double>(1, 2) = (double)height / 2;
+
+    auto hl_homo = line_hmg_from_two_points(hl[0], hl[1]);
+    std::vector<Transform> transforms;
+    for (int i = 0; i < hvps.size(); ++i)
+    {
+        std::vector<Transform> trans;
+        orthorectify(img, hvps[i], hvp_groups[i], z, z_group, ls, 4, K, hl_homo, trans);
+        transforms.insert(transforms.end(), trans.begin(), trans.end());
+    }
+
     return 0;
 }
