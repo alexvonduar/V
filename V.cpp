@@ -12,6 +12,9 @@
 #include "hl_sample.hpp"
 #include "util/unnormalize.hpp"
 #include "lsd.hpp"
+#include "draw.hpp"
+#include "calibrate.hpp"
+#include "orthorectify.hpp"
 
 int V(const Params &params,
       const cv::Mat &img,
@@ -35,6 +38,11 @@ int V(const Params &params,
     // detect line segments
     lsd_detect(img, lsd);
 
+    if (1)
+    {
+        draw("lsd", img, lsd, cv::Scalar(0, 0, 255), true);
+    }
+
     if (0 and params.debug_fileid != nullptr)
     {
         std::sort(lsd.begin(), lsd.end(), [](const auto &a, const auto &b) { return a[0] < b[0]; });
@@ -44,18 +52,6 @@ int V(const Params &params,
         {
             fprintf(params.debug_fileid, "[%.1074g, %.1074g], [%.1074g, %.1074g]\n", lsd[i][0], lsd[i][1], lsd[i][2], lsd[i][3]);
         }
-    }
-
-    if (0)
-    {
-        cv::Mat output;
-        img.copyTo(output);
-        for (const auto &l : lsd)
-        {
-            cv::line(output, cv::Point2d{l[0], l[1]}, cv::Point2d{l[2], l[3]}, cv::Scalar{0, 0, 255});
-        }
-        cv::imshow("LSD", output);
-        cv::waitKey();
     }
 
     // filter line segements
@@ -79,6 +75,11 @@ int V(const Params &params,
         cv::Vec3d l_homo;
         normalize(l, width, height, focal, l_homo);
         ls_homo.emplace_back(l_homo);
+    }
+
+    if (1)
+    {
+        draw("fileted lsd", img, ls, cv::Scalar(0, 0, 255), true);
     }
 
     if (0 and params.debug_fileid != nullptr)
