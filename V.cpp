@@ -315,22 +315,61 @@ int V(const Params &params,
 
     double focal_calbrated;
     std::vector<cv::Vec2d> manh_vps;
-    calibrate(z, hvps, width, height, focal, manh_vps);
-    assert(focal_calbrated > 0);
+    auto confidence = calibrate(z, hvps, width, height, focal_calbrated, manh_vps);
+    //assert(focal_calbrated > 0);
+    //assert(manh_vps.size() == 3);
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "calibrate----\nconfidence: %d\n", confidence);
+        fprintf(params.debug_fileid, "focal: %f\n", focal_calbrated);
+        for (const auto &manh_vp : manh_vps)
+        {
+            fprintf(params.debug_fileid, "manhatan vps: [%f %f]\n", manh_vp[0], manh_vp[1]);
+        }
+    }
 
-    cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
-    K.at<double>(0, 0) = focal;
-    K.at<double>(1, 1) = focal;
-    K.at<double>(0, 2) = (double)width / 2;
-    K.at<double>(1, 2) = (double)height / 2;
+    cv::Mat K;
+    if (focal_calbrated > 0)
+    {
+        K = cv::Mat::eye(3, 3, CV_64F);
+        K.at<double>(0, 0) = focal_calbrated;
+        K.at<double>(1, 1) = focal_calbrated;
+        K.at<double>(0, 2) = (double)width / 2;
+        K.at<double>(1, 2) = (double)height / 2;
+    }
 
     auto hl_homo = line_hmg_from_two_points(hl[0], hl[1]);
     std::vector<Transform> transforms;
-    for (int i = 0; i < hvps.size(); ++i)
+    orthorectify(img, hvps, hvp_groups, z, z_group, ls, 4, K, hl_homo, transforms);
+
+    if (params.debug_fileid != nullptr)
     {
-        std::vector<Transform> trans;
-        orthorectify(img, hvps[i], hvp_groups[i], z, z_group, ls, 4, K, hl_homo, trans);
-        transforms.insert(transforms.end(), trans.begin(), trans.end());
+        fprintf(params.debug_fileid, "transforms ----\n");
+        for (int j = 0; j < transforms.size(); ++j)
+        {
+            fprintf(params.debug_fileid, "transform %d:\n", j);
+            //if ~isempty(transform{j})
+            //trans = transform{j}
+            if (!transforms[j].K.empty())
+            {
+                fprintf(params.debug_fileid, "K ----\n");
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].K.at<double>(0, 0), transforms[j].K.at<double>(0, 1), transforms[j].K.at<double>(0, 2));
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].K.at<double>(1, 0), transforms[j].K.at<double>(1, 1), transforms[j].K.at<double>(1, 2));
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].K.at<double>(2, 0), transforms[j].K.at<double>(2, 1), transforms[j].K.at<double>(2, 2));
+            }
+            if (!transforms[j].R.empty())
+            {
+                fprintf(params.debug_fileid, "R ----\n");
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].R.at<double>(0, 0), transforms[j].R.at<double>(0, 1), transforms[j].R.at<double>(0, 2));
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].R.at<double>(1, 0), transforms[j].R.at<double>(1, 1), transforms[j].R.at<double>(1, 2));
+                fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].R.at<double>(2, 0), transforms[j].R.at<double>(2, 1), transforms[j].R.at<double>(2, 2));
+            }
+            fprintf(params.debug_fileid, "H ----\n");
+            fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].H.at<double>(0, 0), transforms[j].H.at<double>(0, 1), transforms[j].H.at<double>(0, 2));
+            fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].H.at<double>(1, 0), transforms[j].H.at<double>(1, 1), transforms[j].H.at<double>(1, 2));
+            fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].H.at<double>(2, 0), transforms[j].H.at<double>(2, 1), transforms[j].H.at<double>(2, 2));
+            //end
+        }
     }
 
     return 0;

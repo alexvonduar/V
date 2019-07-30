@@ -64,10 +64,6 @@ for is = 1:size(imgDir,2)
 
         % call V
         [hl, hvps, hvp_groups, z, z_group, ls] = V(im, width, height, focal, params);
-        
-        if params.debug_fileid > 2
-            fclose(params.debug_fileid);
-        end
        
         % plot the results
         if plots.hvps
@@ -175,6 +171,14 @@ for is = 1:size(imgDir,2)
                 end
                 drawnow();
             end
+
+            if params.debug_fileid > 0
+                fprintf(params.debug_fileid, "calibrate----\nconfidence: %d\n", confident);
+                fprintf(params.debug_fileid, "focal: %f\n", focal);
+                for i = 1:size(manh_vps, 1)
+                    fprintf(params.debug_fileid, "manhatan vps: [%f %f]\n", manh_vps(i,1), manh_vps(i,2));
+                end
+            end
         end
         
         % save the results image
@@ -213,6 +217,36 @@ for is = 1:size(imgDir,2)
                     end
                 end
             end
+            if params.debug_fileid > 0
+                fprintf(params.debug_fileid, "transforms ----\n");
+                for j = 1:numel(imR)
+                    fprintf(params.debug_fileid, "transform %d:\n", j - 1);
+                    if ~isempty(transform{j})
+                        trans = transform{j};
+                        if ~isempty(trans.K)
+                        fprintf(params.debug_fileid, "K ----\n");
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.K(1, 1), trans.K(1, 2), trans.K(1, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.K(2, 1), trans.K(2, 2), trans.K(2, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.K(3, 1), trans.K(3, 2), trans.K(3, 3));
+                        end
+                        if ~isempty(trans.R)
+                        fprintf(params.debug_fileid, "R ----\n");
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.R(1, 1), trans.R(1, 2), trans.R(1, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.R(2, 1), trans.R(2, 2), trans.R(2, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.R(3, 1), trans.R(3, 2), trans.R(3, 3));
+                        end
+                        fprintf(params.debug_fileid, "H ----\n");
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.H(1, 1), trans.H(1, 2), trans.H(1, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.H(2, 1), trans.H(2, 2), trans.H(2, 3));
+                        fprintf(params.debug_fileid, "%f, %f, %f\n", trans.H(3, 1), trans.H(3, 2), trans.H(3, 3));
+                    end
+                end
+            end
         end
+
+        if params.debug_fileid > 2
+            fclose(params.debug_fileid);
+        end
+
     end
 end
