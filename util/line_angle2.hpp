@@ -17,7 +17,7 @@ double line_angle2(const cv::Vec4d &line)
     //end
 }
 
-double line_angle2(const cv::Vec2d &p1, const cv::Vec2d& p2)
+double line_angle2(const cv::Vec2d &p1, const cv::Vec2d &p2)
 {
     auto x1 = p1[0];
     auto y1 = p1[1];

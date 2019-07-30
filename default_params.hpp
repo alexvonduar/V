@@ -20,7 +20,7 @@ typedef struct
     int theta_horline;
     bool hvp_refinement;
     int refine_niters;
-    FILE * debug_fileid;
+    FILE *debug_fileid;
 } Params;
 
 static inline double score(const double &con, const double &x)

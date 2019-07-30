@@ -63,7 +63,7 @@ void on_vscroll(int pos, void *userdata)
     cv::imshow(p->winName, winImage);
 }
 
-static inline void draw(const std::string &win_name, const cv::Mat &img, const std::vector<cv::Vec4d> &lines, const cv::Scalar& _color, const bool &do_scale = false)
+static inline void draw(const std::string &win_name, const cv::Mat &img, const std::vector<cv::Vec4d> &lines, const cv::Scalar &_color, const bool &do_scale = false)
 {
     DrawData data;
     data.winName = win_name;

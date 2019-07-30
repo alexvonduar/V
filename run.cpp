@@ -37,7 +37,8 @@ int main(int argc, char *argv[])
     std::vector<cv::Vec4d> ls;
     V(params, img, hl, hvps, hvp_groups, z, z_groups, ls);
 
-    if (params.debug_fileid != nullptr) {
+    if (params.debug_fileid != nullptr)
+    {
         fclose(params.debug_fileid);
     }
 }

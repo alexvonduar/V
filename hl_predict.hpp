@@ -78,7 +78,8 @@ static inline void hl_predict(const std::vector<cv::Vec4d> &seglines,
     {
         auto nhist = N.cols;
         fprintf(params.debug_fileid, "hist %d: ", nhist);
-        for (int i = 0; i < nhist; ++i) {
+        for (int i = 0; i < nhist; ++i)
+        {
             fprintf(params.debug_fileid, "%f ", N.at<double>(0, i));
         }
         fprintf(params.debug_fileid, "\n");

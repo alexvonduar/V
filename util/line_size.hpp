@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 
 //function [lsize] = line_size(seglines)
-double line_size(const cv::Vec4d& seglines)
+double line_size(const cv::Vec4d &seglines)
 {
     //lsize = sqrt((seglines(:,1)-seglines(:,3)).^2+(seglines(:,2)-seglines(:,4)).^2);
     auto dx = seglines[0] - seglines[2];
@@ -14,7 +14,7 @@ double line_size(const cv::Vec4d& seglines)
     //end
 }
 
-double line_size_square(const cv::Vec4d& seglines)
+double line_size_square(const cv::Vec4d &seglines)
 {
     //lsize = sqrt((seglines(:,1)-seglines(:,3)).^2+(seglines(:,2)-seglines(:,4)).^2);
     auto dx = seglines[0] - seglines[2];
@@ -24,7 +24,7 @@ double line_size_square(const cv::Vec4d& seglines)
     //end
 }
 
-double line_size(const cv::Vec2d& p1, const cv::Vec2d& p2)
+double line_size(const cv::Vec2d &p1, const cv::Vec2d &p2)
 {
     //lsize = sqrt((seglines(:,1)-seglines(:,3)).^2+(seglines(:,2)-seglines(:,4)).^2);
     auto d = p1 - p2;
@@ -33,7 +33,7 @@ double line_size(const cv::Vec2d& p1, const cv::Vec2d& p2)
     //end
 }
 
-double line_size_square(const cv::Vec2d& p1, const cv::Vec2d& p2)
+double line_size_square(const cv::Vec2d &p1, const cv::Vec2d &p2)
 {
     //lsize = sqrt((seglines(:,1)-seglines(:,3)).^2+(seglines(:,2)-seglines(:,4)).^2);
     auto d = p1 - p2;
