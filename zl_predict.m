@@ -16,9 +16,24 @@ for i = 1:size(ls,1)
 end
 [N,edges0] = histcounts(hist,(pi/2-pi/8):pi/180:(pi/2+pi/8));
 N(find(N <= 5)) = 0;
+if params.debug_fileid > 0
+    fprintf(params.debug_fileid, "zl predict ----\n");
+    fprintf(params.debug_fileid, "N %d: ", length(N));
+    for i = 1 : length(N)
+        fprintf(params.debug_fileid, "%f ", N(i));
+    end
+    fprintf(params.debug_fileid, "\n");
+    fprintf(params.debug_fileid, "edges %d: ", length(edges0));
+    for i = 1:length(edges0)
+        fprintf(params.debug_fileid, "%f ", edges0(i));
+    end
+    fprintf(params.debug_fileid, "\n");
+end
+
 if sum(N) == 0
     N(round(length(N)/2)) = 1;
 end
+
 edges = (edges0(1:end-1)+edges0(2:end))/2;
 [max_modes, H] = mnf_modes(N, 1);
 if isempty(max_modes)
@@ -41,6 +56,10 @@ for i = 1:size(max_modes,1)
         a = edges(j);
         l = abs(v0/sin(a));
         zl(end+1) = u0+l*cos(pi-a);
+    end
+
+    if params.debug_fileid > 0
+        fprintf(params.debug_fileid, "zl max modes %d: [%d, %d] %f\n", i - 1, max_modes(i,1) - 1, max_modes(i,2) - 1, H(i));
     end
 end
 end

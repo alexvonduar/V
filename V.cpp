@@ -124,8 +124,8 @@ int V(const Params &params,
             fprintf(params.debug_fileid, "zenith line prediction: %d ----\n", i);
             fprintf(params.debug_fileid, "zl: %f zl_homo: [%.1074g, %.1074g, %.1074g]\n", zl[i], zl_homo[i][0], zl_homo[i][1], zl_homo[i][2]);
             auto num_z_homo_cand = z_homo_cand.size();
-            fprintf(params.debug_fileid, "num cand %ld\n", num_z_homo_cand);
-            for (int j = 0; j < num_z_homo_cand; ++j)
+            fprintf(params.debug_fileid, "num cand %ld\n", 1UL/*num_z_homo_cand*/);
+            for (int j = 0; j < 1 /*num_z_homo_cand*/; ++j)
             {
                 fprintf(params.debug_fileid, "cand %d: [%.13g %.13g %.13g]\n", j, z_homo_cand[j][0], z_homo_cand[j][1], z_homo_cand[j][2]);
                 auto num_group_cand = z_group_cand[i].size();

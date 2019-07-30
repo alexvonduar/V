@@ -107,7 +107,24 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
     histcounts(hist, 45, range, N, edges0);
     //N(find(N <= 5)) = 0;
     cv::threshold(N, N, 5, 0, cv::THRESH_TOZERO);
+    if (params.debug_fileid != nullptr)
+    {
+        fprintf(params.debug_fileid, "zl predict ----\n");
+        fprintf(params.debug_fileid, "N %d: ", N.cols);
+        for (int i = 0; i < N.cols; ++i)
+        {
+            fprintf(params.debug_fileid, "%f ", N.at<double>(0, i));
+        }
+        fprintf(params.debug_fileid, "\n");
+        fprintf(params.debug_fileid, "edges %ld: ", edges0.size());
+        for (const auto &edge : edges0)
+        {
+            fprintf(params.debug_fileid, "%f ", edge);
+        }
+        fprintf(params.debug_fileid, "\n");
+    }
     assert(N.rows == 1 and N.cols == 45);
+
     //if sum(N) == 0
     //    N(round(length(N)/2)) = 1;
     //end
@@ -164,6 +181,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
         max_modes = s_modes;
     }
 
+    int count = 0;
     for (const auto &mode : max_modes)
     {
         auto a = mode.first;
@@ -184,7 +202,13 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
         auto l = std::abs(v0 / std::sin(edge));
         auto z = u0 + l * std::cos(CV_PI - edge);
         zl.emplace_back(z);
+
+        if (params.debug_fileid != nullptr)
+        {
+            fprintf(params.debug_fileid, "zl max modes %d: [%d, %d] %f\n", count, a, b, H[count]);
+        }
         //end
+        ++count;
     }
     //end
 }
