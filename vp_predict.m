@@ -6,7 +6,7 @@ inter_homo = bsxfun(@rdivide, inter_homo, sqrt(sum(inter_homo.^2,1)));
 inter_homo = bsxfun(@times, inter_homo, sign(inter_homo(3,:)+ eps));
 inter_pts = bsxfun(@rdivide, inter_homo(1:2,:), inter_homo(3,:));
 
-if params.debug_fileid > 0
+if 0 && params.debug_fileid > 0
 for i = 1:size(inter_pts, 2)
     fprintf(params.debug_fileid, "inter: [%f %f] [%f %f %f]\n", inter_pts(1, i), inter_pts(2, i), inter_homo(1, i), inter_homo(2, i), inter_homo(3, i));
 end

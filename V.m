@@ -202,7 +202,7 @@ if params.debug_fileid > 0
 end
 
 % zenith refinement (based on Zhang et al. method)
-[z_homo_cand{best_z_cand}, z_group_cand{best_z_cand}] = z_predict(ls_homo, zl_homo{best_z_cand}, params, 1); 
+[z_homo_cand{best_z_cand}, z_group_cand{best_z_cand}] = z_predict(ls_homo, zl_homo{best_z_cand}, params, 1);
 
 if params.debug_fileid > 0
     homo = z_homo_cand{best_z_cand};
@@ -228,7 +228,7 @@ end
 % HL sampling
 [samp_homo, samp_left, samp_right] = hl_sample(z_homo_cand{best_z_cand}, modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params);
 
-if params.debug_fileid > 0
+if 0 && params.debug_fileid > 0
     fprintf(params.debug_fileid, "hl sampling --\n");
     for i = 1:size(samp_homo, 2)
         fprintf(params.debug_fileid, "%d: [%f %f %f] left %f right %f\n", i - 1, samp_homo(1, i), samp_homo(2, i), samp_homo(3, i), samp_left(i), samp_right(i));

@@ -54,7 +54,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         inter_homo.emplace_back(inter);
     }
 
-    if (params.debug_fileid != nullptr)
+    if (0 and params.debug_fileid != nullptr)
     {
         for (int i = 0; i < inter_homo.size(); ++i)
         {

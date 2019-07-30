@@ -163,7 +163,7 @@ int V(const Params &params,
         Candidate result;
         hl_score(modes_homo, ls_homo, z_homo_cand[i], params, result);
 
-        if (params.debug_fileid > 0)
+        if (params.debug_fileid != nullptr)
         {
             fprintf(params.debug_fileid, "%dth predicted hls -- \n", i + 1);
             auto n_modes = modes_homo.size();
@@ -201,7 +201,7 @@ int V(const Params &params,
         //end
     }
 
-    if (params.debug_fileid > 0)
+    if (params.debug_fileid != nullptr)
     {
         fprintf(params.debug_fileid, "best z: %d score: %f\n", best_z_cand, best_z_score);
 
@@ -217,7 +217,7 @@ int V(const Params &params,
     //[z_homo_cand{best_z_cand}, z_group_cand{best_z_cand}] = z_predict(ls_homo, zl_homo{best_z_cand}, params, 1);
     z_predict(ls_homo, zl_homo[best_z_cand], params, true, z_homo_cand[best_z_cand], z_group_cand[best_z_cand]);
 
-    if (params.debug_fileid > 0)
+    if (params.debug_fileid != nullptr)
     {
         fprintf(params.debug_fileid, "refiend best z: [%f %f %f]\n", z_homo_cand[best_z_cand][0], z_homo_cand[best_z_cand][1], z_homo_cand[best_z_cand][2]);
         fprintf(params.debug_fileid, "refined groups: ");
@@ -253,7 +253,7 @@ int V(const Params &params,
     std::vector<double> samp_right;
     hl_sample(z_homo_cand[best_z_cand], modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params, samp_homo, samp_left, samp_right);
 
-    if (params.debug_fileid > 0)
+    if (0 and params.debug_fileid != nullptr)
     {
         fprintf(params.debug_fileid, "hl sampling --\n");
         for (int i = 0; i < samp_homo.size(); ++i)
