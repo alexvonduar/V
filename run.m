@@ -7,8 +7,8 @@ end
 
 todo.save_results_image = 0;
 todo.benchmark = 0;
-todo.calibrate = 0;
-todo.ortho_rectify = 0;
+todo.calibrate = 1;
+todo.ortho_rectify = 1;
 todo.save_ortho_images = 0;
 todo.debugfile = 1;
 
@@ -19,7 +19,7 @@ plots.hl = 1;%1;
 plots.gthl = 0;%1;
 plots.benchmark = 0;%2; % display precision curve and AUC for each dataset (the figure number will be plots.benchmark*100+#dataset)
 plots.manhattan = 0;%1;
-plots.orthorectify = 0; %3; rectified images (the figure number will be plots.orthorectify*100+#plane)
+plots.orthorectify = 1; %3; rectified images (the figure number will be plots.orthorectify*100+#plane)
 
 %% path(s) to the image (set(s))
 imgDir = cell(1,1);
