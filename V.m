@@ -32,7 +32,7 @@
 % along with this program. If not, see <http://www.gnu.org/licenses/>.
 %%-------------------------------------------------------------------------
 
-function [hl, hvps, hvp_groups, z, z_group, ls] = V(im, width, height, focal, params)
+function [hl, hvps, hvp_groups, z, z_group, ls] = V(name, im, width, height, focal, params)
 % path to LSD
 LSD_BIN_ = 'util/lsd/lsd';
 
@@ -57,7 +57,7 @@ v0 = height/2;
 % Rafael Grompone von Gioi, Jérémie Jakubowicz, Jean-Michel Morel, and Gregory Randall, 
 % LSD: a Line Segment Detector, Image Processing On Line, 2 (2012), pp. 35–55. 
 % https://doi.org/10.5201/ipol.2012.gjmr-lsd
-[lsd, ~] =  extract_linesegment(im, LSD_BIN_);
+[lsd, ~] =  extract_linesegment(name, im, LSD_BIN_);
 
 % plot the results
 if plots.lsd

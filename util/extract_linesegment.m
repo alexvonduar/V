@@ -1,4 +1,4 @@
-function [seglines, temp_dir] =  extract_linesegment(im, LSD_BIN_)
+function [seglines, temp_dir] =  extract_linesegment(fname, im, LSD_BIN_)
 
 % temp directory for LS extraction
 temp_dir = '/tmp/ls_extraction_temp/';
@@ -10,7 +10,9 @@ SET = char(['a':'z' '0':'9']) ;
 ids = ceil(length(SET)*rand(1,20)) ; % with repeat
 name = SET(ids) ;
 
-pgm_path = [temp_dir name '.pgm'];
+[pathstr, basename, ext] = fileparts(fname);
+
+pgm_path = [pathstr '/' basename '.pgm'];
 imwrite(im, pgm_path);
 
 segFile = [pgm_path '.txt'];

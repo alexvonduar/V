@@ -63,7 +63,7 @@ for is = 1:size(imgDir,2)
         end
 
         % call V
-        [hl, hvps, hvp_groups, z, z_group, ls] = V(im, width, height, focal, params);
+        [hl, hvps, hvp_groups, z, z_group, ls] = V(imageList{i}, im, width, height, focal, params);
        
         % plot the results
         if plots.hvps
