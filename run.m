@@ -1,4 +1,4 @@
-function run
+function run(test_dir)
 if ~isdeployed
     addpath util
 end
@@ -25,7 +25,11 @@ plots.orthorectify = 1; %3; rectified images (the figure number will be plots.or
 imgDir = cell(1,1);
 
 % some test images provided with this code
-imgDir{1,1} = './test_images/'; 
+if ~exist('test_dir', 'var')
+    imgDir{1,1} = './test_images/';
+else
+    imgDir{1,1} = test_dir;
+end
 
 % the following datasets, as well as the ground truth horizon lines in a
 % unified format can be obtained from our webpage:
