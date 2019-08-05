@@ -15,6 +15,7 @@
 #include "draw.hpp"
 #include "calibrate.hpp"
 #include "orthorectify.hpp"
+#include "util/warp.hpp"
 
 int V(const Params &params,
       const cv::Mat &img,
@@ -124,7 +125,7 @@ int V(const Params &params,
             fprintf(params.debug_fileid, "zenith line prediction: %d ----\n", i);
             fprintf(params.debug_fileid, "zl: %f zl_homo: [%.1074g, %.1074g, %.1074g]\n", zl[i], zl_homo[i][0], zl_homo[i][1], zl_homo[i][2]);
             auto num_z_homo_cand = z_homo_cand.size();
-            fprintf(params.debug_fileid, "num cand %ld\n", 1UL/*num_z_homo_cand*/);
+            fprintf(params.debug_fileid, "num cand %ld\n", 1UL /*num_z_homo_cand*/);
             for (int j = 0; j < 1 /*num_z_homo_cand*/; ++j)
             {
                 fprintf(params.debug_fileid, "cand %d: [%.13g %.13g %.13g]\n", j, z_homo_cand[j][0], z_homo_cand[j][1], z_homo_cand[j][2]);
@@ -340,7 +341,7 @@ int V(const Params &params,
 
     auto hl_homo = line_hmg_from_two_points(hl[0], hl[1]);
     std::vector<Transform> transforms;
-    orthorectify(img, hvps, hvp_groups, z, z_group, ls, 4, K, hl_homo, transforms);
+    orthorectify(img, hvps, hvp_groups, z, z_group, ls, 4, K, hl_homo, params, transforms);
 
     if (params.debug_fileid != nullptr)
     {
@@ -369,6 +370,15 @@ int V(const Params &params,
             fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].H.at<double>(1, 0), transforms[j].H.at<double>(1, 1), transforms[j].H.at<double>(1, 2));
             fprintf(params.debug_fileid, "%f, %f, %f\n", transforms[j].H.at<double>(2, 0), transforms[j].H.at<double>(2, 1), transforms[j].H.at<double>(2, 2));
             //end
+        }
+    }
+
+    for (const auto& t : transforms) {
+        cv::Mat output;
+        warp(img, output, t.H, cv::Size(0, 960));
+        if (!output.empty()) {
+            cv::imshow("warped", output);
+            cv::waitKey();
         }
     }
 

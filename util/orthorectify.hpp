@@ -7,6 +7,7 @@
 #include "line_hmg_intersect.hpp"
 #include "line_size.hpp"
 #include "line_angle2.hpp"
+#include "default_params.hpp"
 
 typedef struct
 {
@@ -47,6 +48,7 @@ void orthorectify(
     int n_lines_min,
     const cv::Mat &K,
     const cv::Vec3d &horizon_line,
+    const Params &params,
     std::vector<Transform> &transforms)
 {
     auto width = img.cols;
@@ -276,6 +278,12 @@ void orthorectify(
                         transform.R.at<double>(2, 1) = y.at<double>(2, 0);
                         transform.R.at<double>(2, 2) = z.at<double>(2, 0);
                         transform.H = K * transform.R.inv() * Ki;
+                        if (params.debug_fileid != nullptr)
+                        {
+                            fprintf(params.debug_fileid, "z [%f %f %f]\n", z.at<double>(0, 0), z.at<double>(1, 0), z.at<double>(2, 0));
+                            fprintf(params.debug_fileid, "x [%f %f %f]\n", x.at<double>(0, 0), x.at<double>(1, 0), x.at<double>(2, 0));
+                            fprintf(params.debug_fileid, "y [%f %f %f]\n", y.at<double>(0, 0), y.at<double>(1, 0), y.at<double>(2, 0));
+                        }
                     }
                     else
                     {
@@ -332,6 +340,17 @@ void orthorectify(
                             cv::Point2d{M[0] + w / 2, M[1] + h / 2},
                             cv::Point2d{M[0] + w / 2, M[1] - h / 2}};
                         transform.H = cv::findHomography(corners, pointsR, cv::noArray(), cv::LMEDS);
+                        if (params.debug_fileid != nullptr)
+                        {
+                            fprintf(params.debug_fileid, "M [%f %f]\n", M[0], M[1]);
+                            fprintf(params.debug_fileid, "A %f\n", A);
+                            fprintf(params.debug_fileid, "AR %f\n", AR);
+                            fprintf(params.debug_fileid, "w %f h %f\n", w, h);
+                            for (int k = 0; k < pointsR.size(); ++k)
+                            {
+                                fprintf(params.debug_fileid, "[%f %f] -> [%f %f]\n", corners[k].x, corners[k].y, pointsR[k].x, pointsR[k].y);
+                            }
+                        }
                     }
                     transforms.emplace_back(transform);
                 }

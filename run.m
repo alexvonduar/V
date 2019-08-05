@@ -200,7 +200,7 @@ for is = 1:size(imgDir,2)
                 K = [focal 0 width/2; 0 focal height/2; 0 0 1];
             end
             hl_homo = line_hmg_from_two_points([hl(1,1) hl(1,2)],[hl(2,1) hl(2,2)]);
-            [imR,maskR,transform] = orthorectify_from_vps_and_lines(im, hvps, hvp_groups, z, z_group, ls, 4, K, hl_homo, 0);
+            [imR,maskR,transform] = orthorectify_from_vps_and_lines(im, hvps, hvp_groups, z, z_group, ls, 4, K, hl_homo, params, 0);
             if todo.save_ortho_images
                 root = strsplit(imageList{i},'.jpg');
                 root = root{1};

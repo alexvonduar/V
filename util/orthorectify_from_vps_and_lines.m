@@ -25,7 +25,7 @@
 % along with this program. If not, see <http://www.gnu.org/licenses/>.
 %%-------------------------------------------------------------------------
 
-function [imR,maskR,transform] = orthorectify_from_vps_and_lines(im, hvps, hvp_groups, zenith, z_group, lines, n_lines_min, K, horizon_line, PLOT)
+function [imR,maskR,transform] = orthorectify_from_vps_and_lines(im, hvps, hvp_groups, zenith, z_group, lines, n_lines_min, K, horizon_line, params, PLOT)
 n_hvp = size(hvps, 1);
 width = size(im, 2);
 height = size(im, 1);
@@ -165,6 +165,11 @@ for i = 1:n_hvp
                     z = cross(x,y);
                     transform{n_imR}.R = [x, y, z];
                     transform{n_imR}.H = K*inv(transform{n_imR}.R)*Ki;
+                    if params.debug_fileid > 0
+                        fprintf(params.debug_fileid, "z [%f %f %f]\n", z(1,1), z(2,1), z(3,1));
+                        fprintf(params.debug_fileid, "x [%f %f %f]\n", x(1,1), x(2,1), x(3,1));
+                        fprintf(params.debug_fileid, "y [%f %f %f]\n", y(1,1), y(2,1), y(3,1));
+                    end
                 else
                     lhmin = line_hmg_from_two_points(hvps(i,1:2), centroid(idmin2,1:2));
                     lhmax = line_hmg_from_two_points(hvps(i,1:2), centroid(idmax2,1:2));
@@ -187,10 +192,10 @@ for i = 1:n_hvp
                         end
                     end
                     if PLOT
-                        line_plot([zenith(1,1) zenith(1,2) centroid_min(1) centroid_min(2)],'r--');
-                        line_plot([zenith(1,1) zenith(1,2) centroid_max(1) centroid_max(2)],'r--');
-                        line_plot([hvps(i,1) hvps(i,2) centroid(idmin2,1) centroid(idmin2,2)],'r--');
-                        line_plot([hvps(i,1) hvps(i,2) centroid(idmax2,1) centroid(idmax2,2)],'r--');
+                        line_plot([zenith(1,1) zenith(1,2) centroid_min(1) centroid_min(2)],'g--');
+                        line_plot([zenith(1,1) zenith(1,2) centroid_max(1) centroid_max(2)],'g--');
+                        line_plot([hvps(i,1) hvps(i,2) centroid(idmin2,1) centroid(idmin2,2)],'b--');
+                        line_plot([hvps(i,1) hvps(i,2) centroid(idmax2,1) centroid(idmax2,2)],'b--');
                         lhmin = line_hmg_from_two_points(hvps(i,1:2), centroid(idmin2,1:2));
                         lhmax = line_hmg_from_two_points(hvps(i,1:2), centroid(idmax2,1:2));
                         plot([corners(1,:),corners(1,1)],[corners(2,:),corners(2,1)],'r');
@@ -207,6 +212,15 @@ for i = 1:n_hvp
                     tform = estimateGeometricTransform(points,pointsR,'projective');
                     transform{n_imR}.H=tform.T';
                     transform{n_imR}.R = [];
+                    if params.debug_fileid > 0
+                        fprintf(params.debug_fileid, "M [%f %f]\n", M(1,1), M(2,1));
+                        fprintf(params.debug_fileid, "A %f\n", A);
+                        fprintf(params.debug_fileid, "AR %f\n", AR);
+                        fprintf(params.debug_fileid, "w %f h %f\n", w, h);
+                        for k = 1:size(pointsR, 1)
+                            fprintf(params.debug_fileid, "[%f %f] -> [%f %f]\n", points(k,1), points(k,2), pointsR(k,1), pointsR(k,2));
+                        end
+                    end
                 end
                 [imR{n_imR},transform{n_imR}.imref] = orthorectify(im, transform{n_imR}.H, vp_zen_line, s);
                 if ~isempty(transform{n_imR}.imref)
