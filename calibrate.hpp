@@ -190,7 +190,7 @@ int calibrate(
     if (confident == -1 and hvp.size() and (std::abs(zvp[1] - v0) < infty * height))
     {
         //id_finite = find(abs(hvp(:,1)-u0) < infty*width);
-        auto id_finite = std::find_if(hvp.begin(), hvp.end(), [&u0, &infty, &width](const auto &a) { return (a[1] - u0) < (infty * width); });
+        auto id_finite = std::find_if(hvp.begin(), hvp.end(), [&u0, &infty, &width](const auto &a) { return std::abs(a[0] - u0) < (infty * width); });
         //if length(id_finite) > 0
         if (id_finite != hvp.end())
         {
