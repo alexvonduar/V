@@ -52,24 +52,35 @@ static inline void hl_sample(
         for (int j = 0; j < (nsamp - 1); ++j)
         {
             double orand = 0;
+#if 1
             if (H[i] <= 0)
             {
                 //draw = rand()*uniformrnd(end);
                 //id = min(find(uniformrnd >= draw));
                 //orand = x(id)*height + modes_offset(i);
                 auto id = rng.uniform(0, 100000);
-                auto orand = double(4.) * id / 100000. - 2.;
+                orand = double(4.) * id / 100000. - 2. + modes_offset[i];
+                //std::cout << j << ": " << id << " " << orand << std::endl;
             }
             else
             {
                 //orand = normrnd(0,params.sigma*height) + modes_offset(i);
-                auto orand = rng.gaussian(params.sigma * height) + modes_offset[i];
+                auto id = rng.gaussian(params.sigma * height);
+                orand = id + modes_offset[i];
+                //std::cout << j << ": " << id << " " << orand << std::endl;
                 //end
             }
+#else
+            orand = -1.9 + (3.8 * j) / (nsamp - 1) + modes_offset[i];
+#endif
             //mnf_center = [u0+orand*cos(-tilt+pi/2) v0+orand*sin(-tilt+pi/2)];
             cv::Vec2d mnf_center{u0 + orand * std::cos(-tilt + CV_PI / 2), v0 + orand * std::sin(-tilt + CV_PI / 2)};
             //hmnf = line_hmg_from_two_points(mnf_center, mnf_center+[cos(-tilt) sin(-tilt)]);
-            auto hmnf = line_hmg_from_two_points(mnf_center, mnf_center + cv::Vec2d{std::cos(-tilt), std::sin(-tilt)});
+            auto hmnf = line_hmg_from_two_points(mnf_center, cv::Vec2d{std::cos(-tilt) + mnf_center[0], std::sin(-tilt) + mnf_center[1]});
+            if (0 and params.debug_fileid != nullptr)
+            {
+                fprintf(params.debug_fileid, "%d: %.1079g [%.1079g %.1079g] -> [%.1079g %.1079g %.1079g]\n", j, orand, mnf_center[0], mnf_center[1], hmnf[0], hmnf[1], hmnf[2]);
+            }
             //samp_left(end+1) = -hmnf(3)/hmnf(2);
             auto left = -hmnf[2] / hmnf[1];
             samp_left.emplace_back(left);
