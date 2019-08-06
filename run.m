@@ -224,8 +224,8 @@ for is = 1:size(imgDir,2)
             if params.debug_fileid > 0
                 fprintf(params.debug_fileid, "transforms ----\n");
                 for j = 1:numel(imR)
-                    fprintf(params.debug_fileid, "transform %d:\n", j - 1);
                     if ~isempty(transform{j})
+                        fprintf(params.debug_fileid, "transform %d:\n", j - 1);
                         trans = transform{j};
                         if ~isempty(trans.K)
                         fprintf(params.debug_fileid, "K ----\n");
