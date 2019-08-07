@@ -6,20 +6,20 @@
 namespace VUtils
 {
 
-template <typename _Tp>
-static inline bool isContourConvex_(const cv::Point_<_Tp> *p, int n)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool isContourConvex_(const cv::Point_<T> *p, int n)
 {
-    cv::Point_<_Tp> prev_pt = p[(n - 2 + n) % n];
-    cv::Point_<_Tp> cur_pt = p[n - 1];
+    cv::Point_<T> prev_pt = p[(n - 2 + n) % n];
+    cv::Point_<T> cur_pt = p[n - 1];
 
-    _Tp dx0 = cur_pt.x - prev_pt.x;
-    _Tp dy0 = cur_pt.y - prev_pt.y;
+    T dx0 = cur_pt.x - prev_pt.x;
+    T dy0 = cur_pt.y - prev_pt.y;
     int orientation = 0;
 
     for (int i = 0; i < n; i++)
     {
-        _Tp dxdy0, dydx0;
-        _Tp dx, dy;
+        T dxdy0, dydx0;
+        T dx, dy;
 
         prev_pt = cur_pt;
         cur_pt = p[i];
@@ -43,20 +43,20 @@ static inline bool isContourConvex_(const cv::Point_<_Tp> *p, int n)
     return true;
 }
 
-template <typename _Tp>
-static inline bool isContourConvex_(const cv::Vec<_Tp, 2> *p, int n)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool isContourConvex_(const cv::Vec<T, 2> *p, int n)
 {
     auto prev_pt = p[(n - 2 + n) % n];
     auto cur_pt = p[n - 1];
 
-    _Tp dx0 = cur_pt[0] - prev_pt[0];
-    _Tp dy0 = cur_pt[1] - prev_pt[1];
+    T dx0 = cur_pt[0] - prev_pt[0];
+    T dy0 = cur_pt[1] - prev_pt[1];
     int orientation = 0;
 
     for (int i = 0; i < n; i++)
     {
-        _Tp dxdy0, dydx0;
-        _Tp dx, dy;
+        T dxdy0, dydx0;
+        T dx, dy;
 
         prev_pt = cur_pt;
         cur_pt = p[i];
@@ -80,6 +80,7 @@ static inline bool isContourConvex_(const cv::Vec<_Tp, 2> *p, int n)
     return true;
 }
 
+#if 0
 static inline bool isContourConvex(cv::InputArray _contour)
 {
     cv::Mat contour = _contour.getMat();
@@ -91,9 +92,10 @@ static inline bool isContourConvex(cv::InputArray _contour)
 
     return depth == CV_32S ? isContourConvex_(contour.ptr<cv::Point>(), total) : isContourConvex_(contour.ptr<cv::Point2f>(), total);
 }
+#endif
 
-template <typename _Tp>
-static inline bool is_convex_polygon(const std::vector<cv::Point_<_Tp>> &polygon)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool is_convex_polygon(const std::vector<cv::Point_<T>> &polygon)
 {
     assert(polygon.size() >= 3);
     auto p = &polygon[0];
@@ -101,16 +103,16 @@ static inline bool is_convex_polygon(const std::vector<cv::Point_<_Tp>> &polygon
     return isContourConvex_(p, N);
 }
 
-template <typename _Tp, std::size_t N>
-static inline bool is_convex_polygon(const std::array<cv::Point_<_Tp>, N> &polygon)
+template <typename T, std::size_t N, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool is_convex_polygon(const std::array<cv::Point_<T>, N> &polygon)
 {
     assert(polygon.size() >= 3);
     auto p = &polygon[0];
     return isContourConvex_(p, N);
 }
 
-template <typename _Tp>
-static inline bool is_convex_polygon(const std::vector<cv::Vec<_Tp, 2>> &polygon)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool is_convex_polygon(const std::vector<cv::Vec<T, 2>> &polygon)
 {
     assert(polygon.size() >= 3);
     auto p = &polygon[0];
@@ -118,8 +120,8 @@ static inline bool is_convex_polygon(const std::vector<cv::Vec<_Tp, 2>> &polygon
     return isContourConvex_(p, N);
 }
 
-template <typename _Tp, std::size_t N>
-static inline bool is_convex_polygon(const std::array<cv::Vec<_Tp, 2>, N> &polygon)
+template <typename T, std::size_t N, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline bool is_convex_polygon(const std::array<cv::Vec<T, 2>, N> &polygon)
 {
     assert(polygon.size() >= 3);
     auto p = &polygon[0];
@@ -208,24 +210,6 @@ static inline bool morphological_check(const cv::Mat &hom, const cv::Rect &_rect
     printf("is convex: %d aspect ratio: %f[valid %d] scale: %d offset: %d\n", is_convex, aspect_ratio, valid_aspect_ratio, valid_scale, valid_offset);
     //}
     return valid;
-}
-
-static inline auto find_best_identity(const std::vector<cv::Mat> &hom) -> decltype(hom.size())
-{
-    auto n = hom.size();
-    decltype(n) idx = 0;
-    float max_area = 0;
-    for (decltype(n) i = 0; i < n; ++i)
-    {
-        auto area = identity_similarity(hom[i]);
-        if (area > max_area)
-        {
-            idx = i;
-            max_area = area;
-        }
-    }
-
-    return idx;
 }
 
 bool is_good_homography(const cv::Mat &hom, const cv::Rect &rect, const bool &do_morphological_check = true)

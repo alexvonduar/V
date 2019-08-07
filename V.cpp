@@ -17,14 +17,15 @@
 #include "orthorectify.hpp"
 #include "util/warp.hpp"
 
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 int V(const Params &params,
       const cv::Mat &img,
-      std::vector<cv::Vec2d> &hl,
-      std::vector<cv::Vec2d> &hvps,
+      std::vector<cv::Vec<T, 2>> &hl,
+      std::vector<cv::Vec<T, 2>> &hvps,
       std::vector<std::vector<int>> &hvp_groups,
-      cv::Vec2d &z,
+      cv::Vec<T, 2> &z,
       std::vector<int> &z_group,
-      std::vector<cv::Vec4d> &ls)
+      std::vector<cv::Vec<T, 4>> &ls)
 {
     //Params params;
     //default_params(params);
@@ -35,7 +36,7 @@ int V(const Params &params,
     //    return -1;
     //}
 
-    std::vector<cv::Vec4d> lsd;
+    std::vector<cv::Vec<T, 4>> lsd;
     // detect line segments
     lsd_detect(img, lsd);
 
@@ -59,21 +60,21 @@ int V(const Params &params,
     auto width = img.cols;
     auto height = img.rows;
 
-    double focal = width > height ? double(width) / 2. : double(height) / 2.; //fake focal;
+    T focal = width > height ? T(width) / 2. : T(height) / 2.; //fake focal;
 
     // principal point is assumed at image center
-    auto u0 = width / 2;
-    auto v0 = height / 2;
+    auto u0 = (T)width / 2;
+    auto v0 = (T)height / 2;
 
-    auto thres_aligned = double(std::max(width, height)) / 128.;
-    auto length_t = double(std::sqrt(width + height)) / 1.71;
-    //std::vector<cv::Vec4d> ls;
+    auto thres_aligned = T(std::max(width, height)) / 128.;
+    auto length_t = T(std::sqrt(width + height)) / 1.71;
+    //std::vector<cv::Vec<T, 4>> ls;
     ls_filter(thres_aligned, length_t, lsd, ls);
-    std::vector<cv::Vec3d> ls_homo;
+    std::vector<cv::Vec<T, 3>> ls_homo;
     ls_homo.reserve(ls.size());
     for (const auto &l : ls)
     {
-        cv::Vec3d l_homo;
+        cv::Vec<T, 3> l_homo;
         normalize(l, width, height, focal, l_homo);
         ls_homo.emplace_back(l_homo);
     }
@@ -96,19 +97,19 @@ int V(const Params &params,
     // ZL and zenith rough predictions
 
     // prediction of the zenith line
-    auto dist_max = double(width) / 8.;
+    auto dist_max = T(width) / 8.;
     // zl = zl_predict(lst, dist_max, u0, v0, width, height, params);
-    std::vector<double> zl;
+    std::vector<T> zl;
     zl_predict(lsd, dist_max, u0, v0, width, height, params, zl);
 
-    std::vector<cv::Vec3d> zl_homo;
-    std::vector<cv::Vec3d> z_homo_cand;
+    std::vector<cv::Vec<T, 3>> zl_homo;
+    std::vector<cv::Vec<T, 3>> z_homo_cand;
     std::vector<std::vector<int>> z_group_cand;
     for (const auto &_zl : zl)
     {
-        cv::Vec3d z_homo;
-        normalize(cv::Vec4d{_zl, 0, double(u0), double(v0)}, width, height, focal, z_homo);
-        cv::Vec3d homo;
+        cv::Vec<T, 3> z_homo;
+        normalize(cv::Vec<T, 4>{_zl, 0, T(u0), T(v0)}, width, height, focal, z_homo);
+        cv::Vec<T, 3> homo;
         std::vector<int> group;
         z_predict(ls_homo, z_homo, params, false, homo, group);
         zl_homo.emplace_back(z_homo);
@@ -143,17 +144,17 @@ int V(const Params &params,
     // choose the best zenith candidate based on the relevance of the predicted HLs
 
     int best_z_cand = 0;
-    double best_z_score = 0;
+    T best_z_score = 0;
     //for i = 1:length(zl_homo)
     for (int i = 0; i < zl_homo.size(); ++i)
     {
         // HL prediction
         //[modes_homo, ~, ~, ~, ~] = hl_predict(lsd, z_homo_cand{i}, u0, v0, width, height, focal, params);
-        std::vector<cv::Vec3d> modes_homo;
-        std::vector<double> modes_offset;
-        std::vector<double> modes_left;
-        std::vector<double> modes_right;
-        std::vector<double> H;
+        std::vector<cv::Vec<T, 3>> modes_homo;
+        std::vector<T> modes_offset;
+        std::vector<T> modes_left;
+        std::vector<T> modes_right;
+        std::vector<T> H;
         hl_predict(lsd, z_homo_cand[i], u0, v0, width, height, focal, params, modes_homo, modes_offset, modes_left, modes_right, H);
 
         // HL scoring (for performance optimization, each zenith candidate is
@@ -161,7 +162,7 @@ int V(const Params &params,
         // that step))
 
         //[~, results] = hl_score(modes_homo, ls_homo, z_homo_cand{i}, params);
-        Candidate result;
+        _Candidate<T> result;
         hl_score(modes_homo, ls_homo, z_homo_cand[i], params, result);
 
         if (params.debug_fileid != nullptr)
@@ -232,11 +233,11 @@ int V(const Params &params,
 
     /// HL prediction
     //[modes_homo, modes_offset, modes_left, modes_right, H] = hl_predict(lsd, z_homo_cand{best_z_cand}, u0, v0, width, height, focal, params);
-    std::vector<cv::Vec3d> modes_homo;
-    std::vector<double> modes_offset;
-    std::vector<double> modes_left;
-    std::vector<double> modes_right;
-    std::vector<double> H;
+    std::vector<cv::Vec<T, 3>> modes_homo;
+    std::vector<T> modes_offset;
+    std::vector<T> modes_left;
+    std::vector<T> modes_right;
+    std::vector<T> H;
     hl_predict(lsd, z_homo_cand[best_z_cand], u0, v0, width, height, focal, params, modes_homo, modes_offset, modes_left, modes_right, H);
     if (params.debug_fileid != nullptr)
     {
@@ -249,9 +250,9 @@ int V(const Params &params,
 
     /// HL sampling
     //[samp_homo, samp_left, samp_right] = hl_sample(z_homo_cand{best_z_cand}, modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params);
-    std::vector<cv::Vec3d> samp_homo;
-    std::vector<double> samp_left;
-    std::vector<double> samp_right;
+    std::vector<cv::Vec<T, 3>> samp_homo;
+    std::vector<T> samp_left;
+    std::vector<T> samp_right;
     hl_sample(z_homo_cand[best_z_cand], modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params, samp_homo, samp_left, samp_right);
 
     if (0 and params.debug_fileid != nullptr)
@@ -265,25 +266,25 @@ int V(const Params &params,
 
     /// HL scoring
     //[hl_homo, results] = hl_score(samp_homo, ls_homo, z_homo_cand{best_z_cand}, params);
-    Candidate r;
+    _Candidate<T> r;
     hl_score(samp_homo, ls_homo, z_homo_cand[best_z_cand], params, r);
     //hl = unnormalize(hl_homo, width, height, focal, 1);
-    //std::vector<cv::Vec2d> hl;
+    //std::vector<cv::Vec<T, 2>> hl;
     unnormalize(r.horizon_homo, width, height, focal, hl);
 
     //hvps = unnormalize(results.hvp_homo, width, height, focal, 0);
-    //std::vector<cv::Vec2d> hvps;
+    //std::vector<cv::Vec<T, 2>> hvps;
     hvps.reserve(r.hvp_homo.size());
     for (const auto &hvp_homo : r.hvp_homo)
     {
-        cv::Vec2d hvp;
+        cv::Vec<T, 2> hvp;
         unnormalize(hvp_homo, width, height, focal, hvp);
         hvps.emplace_back(hvp);
     }
 
     hvp_groups = r.hvp_groups;
     //z = unnormalize(z_homo_cand{best_z_cand}, width, height, focal, 0);
-    //cv::Vec2d z;
+    //cv::Vec<T, 2> z;
     unnormalize(z_homo_cand[best_z_cand], width, height, focal, z);
     //std::vector<int> z_group;
     //z_group = z_group_cand{best_z_cand};
@@ -315,7 +316,7 @@ int V(const Params &params,
     }
 
     double focal_calbrated;
-    std::vector<cv::Vec2d> manh_vps;
+    std::vector<cv::Vec<T, 2>> manh_vps;
     auto confidence = calibrate(z, hvps, width, height, focal_calbrated, manh_vps);
     //assert(focal_calbrated > 0);
     //assert(manh_vps.size() == 3);
@@ -373,14 +374,28 @@ int V(const Params &params,
         }
     }
 
-    for (const auto& t : transforms) {
+    for (const auto &t : transforms)
+    {
         cv::Mat output;
         warp(img, output, t.H, cv::Size(0, 960));
-        if (!output.empty()) {
+        if (!output.empty())
+        {
             cv::imshow("warped", output);
             cv::waitKey();
         }
     }
 
     return 0;
+}
+
+int vp(const Params &params,
+       const cv::Mat &img,
+       std::vector<cv::Vec2d> &hl,
+       std::vector<cv::Vec2d> &hvps,
+       std::vector<std::vector<int>> &hvp_groups,
+       cv::Vec2d &z,
+       std::vector<int> &z_group,
+       std::vector<cv::Vec4d> &ls)
+{
+    return V(params, img, hl, hvps, hvp_groups, z, z_group, ls);
 }

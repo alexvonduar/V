@@ -10,7 +10,7 @@
 
 #if 0
 //function [score, horgroup] = vp_score(vp_homo, lines_homo, score_function)
-static inline double vp_score(const cv::Vec3d &vp_homo, const std::vector<cv::Vec3d> &lines_homo,
+static inline double vp_score(const cv::Vec<T, 3> &vp_homo, const std::vector<cv::Vec<T, 3>> &lines_homo,
                               const Params &params,
                               //double (*score_function)(const double &, const double &),
                               //double& score,
@@ -52,11 +52,12 @@ static inline double vp_score(const cv::Vec3d &vp_homo, const std::vector<cv::Ve
 #endif
 
 //function [zenith_homo, zengroupIds] = z_predict(lines_homo, zenith_line_homo, params, refine)
-static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
-                             const cv::Vec3d &zenith_line_homo,
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void z_predict(const std::vector<cv::Vec<T, 3>> &lines_homo,
+                             const cv::Vec<T, 3> &zenith_line_homo,
                              const Params &params,
                              const bool &refine,
-                             cv::Vec3d &zenith_homo,
+                             cv::Vec<T, 3> &zenith_homo,
                              std::vector<int> &zengroupIds)
 {
     zengroupIds.clear();
@@ -67,7 +68,7 @@ static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
     //verticalInd = find(abs(lines_tilt_ortho - zenith_tilt) < params.theta_z);
     //zenith_homo_pred = lines_normal(lines_homo(:,verticalInd));
     auto zenith_tilt = atand(-zenith_line_homo[1], zenith_line_homo[0]);
-    std::vector<cv::Vec3d> lines;
+    std::vector<cv::Vec<T, 3>> lines;
     lines.reserve(lines_homo.size());
     std::vector<int> validIds;
     validIds.reserve(lines_homo.size());
@@ -85,12 +86,14 @@ static inline void z_predict(const std::vector<cv::Vec3d> &lines_homo,
         ++count;
     }
 
-    cv::Vec3d zenith_homo_pred;
-    lines_normal(lines, cv::Mat(), params, zenith_homo_pred);
-    if (params.debug_fileid != nullptr) {
+    cv::Vec<T, 3> zenith_homo_pred;
+    lines_normal(lines, cv::Mat_<T>(), params, zenith_homo_pred);
+    if (params.debug_fileid != nullptr)
+    {
         fprintf(params.debug_fileid, "z_predict: zenith tilt %f\n", zenith_tilt);
         fprintf(params.debug_fileid, "z_predict: %ld vertical lines\n", lines.size());
-        for (int i = 0; i < validIds.size(); ++i) {
+        for (int i = 0; i < validIds.size(); ++i)
+        {
             fprintf(params.debug_fileid, "%d ", validIds[i]);
         }
         fprintf(params.debug_fileid, "\n");

@@ -34,38 +34,40 @@
 
 #include <opencv2/opencv.hpp>
 
-typedef struct
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+struct _MHT
 {
-    double x;
-    double y;
-    double ff;
-    double vvpc;
+    T x;
+    T y;
+    T ff;
+    T vvpc;
     int v;
     int v2;
-} MHT;
+}; // MHT;
 
 //function [focal, manh_vps, confident] = calibrate(zvp, hvp, width, height)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 int calibrate(
-    const cv::Vec2d &zvp,
-    const std::vector<cv::Vec2d> &hvp,
+    const cv::Vec<T, 2> &zvp,
+    const std::vector<cv::Vec<T, 2>> &hvp,
     const int &width,
     const int &height,
-    double &focal,
-    std::vector<cv::Vec2d> &manh_vps)
+    T &focal,
+    std::vector<cv::Vec<T, 2>> &manh_vps)
 {
     int infty = 4;
-    double accuracy = 2;
+    T accuracy = 2;
     //nt = 2^(5+min(accuracy, log2(width)-5));
     auto nt = std::pow(2., 5 + std::min(accuracy, std::log2(width) - 5));
-    auto step_h = (double)width / nt;
+    auto step_h = (T)width / nt;
     auto Dt_h = std::atan(step_h / width);
-    auto u0 = (double)width / 2;
-    auto v0 = (double)height / 2;
+    auto u0 = (T)width / 2;
+    auto v0 = (T)height / 2;
     //manh_vps = [];
     focal = -1;
     int confident = -1;
     //mht = [];
-    std::vector<MHT> mht;
+    std::vector<struct _MHT<T>> mht;
     //mht_count = 0;
     int mht_best = 0;
     //hvp_count = size(hvp,1);
@@ -107,17 +109,17 @@ int calibrate(
                     //mht(mht_count, 3) = ff;
                     //mht(mht_count, 5) = v;
                     //mht(mht_count, 6) = v2;
-                    //at_vz1 = atan(mht(mht_count, 2)/double(height))/Dt_h;
+                    //at_vz1 = atan(mht(mht_count, 2)/T(height))/Dt_h;
                     auto at_vz1 = std::atan(mht2 / height) / Dt_h;
-                    //at_vz2 = atan(zvp(2)/double(height))/Dt_h;
+                    //at_vz2 = atan(zvp(2)/T(height))/Dt_h;
                     auto at_vz2 = std::atan(zvp[1] / height) / Dt_h;
                     //mht(mht_count, 4) = min(abs(at_vz1-at_vz2), abs(at_vz1+at_vz2));
-                    mht.emplace_back(MHT{ff * vv3.x / vv3.z + u0,
-                                         ff * vv3.y / vv3.z + v0,
-                                         ff,
-                                         std::min(std::abs(at_vz1 - at_vz2), std::abs(at_vz1 + at_vz2)),
-                                         v,
-                                         v2});
+                    mht.emplace_back(_MHT<T>{ff * vv3.x / vv3.z + u0,
+                                             ff * vv3.y / vv3.z + v0,
+                                             ff,
+                                             std::min(std::abs(at_vz1 - at_vz2), std::abs(at_vz1 + at_vz2)),
+                                             v,
+                                             v2});
                 }
                 //end
             }
@@ -209,26 +211,26 @@ int calibrate(
                     focal = ff;
                     //K = [[focal 0 u0];[0 focal v0];[0 0 1]];
                     cv::Mat K = cv::Mat::eye(3, 3, CV_64F);
-                    K.at<double>(0, 0) = focal;
-                    K.at<double>(0, 2) = u0;
-                    K.at<double>(1, 1) = focal;
-                    K.at<double>(1, 2) = v0;
+                    K.at<T>(0, 0) = focal;
+                    K.at<T>(0, 2) = u0;
+                    K.at<T>(1, 1) = focal;
+                    K.at<T>(1, 2) = v0;
                     //r2 = [hvp(id_finite(1),1)-u0; hvp(id_finite(1),2)-v0; focal];
-                    cv::Vec3d r2{(*id_finite)[0] - u0, (*id_finite)[1] - v0, focal};
+                    cv::Vec<T, 3> r2{(*id_finite)[0] - u0, (*id_finite)[1] - v0, focal};
                     //r2 = r2/norm(r2);
                     r2 /= cv::norm(r2);
                     //r3 = [zvp(1)-u0; zvp(2)-v0; ff];
-                    cv::Vec3d r3{zvp[0] - u0, zvp[1] - v0, ff};
+                    cv::Vec<T, 3> r3{zvp[0] - u0, zvp[1] - v0, ff};
                     //r3 = r3/norm(r3);
                     r3 /= cv::norm(r3);
                     //vpx = K*cross(r2,r3);
-                    cv::Vec3d cross(r2.cross(r3));
+                    cv::Vec<T, 3> cross(r2.cross(r3));
                     cv::Mat vpx = K * cross;
                     //vpx = vpx/vpx(3);
-                    auto vp_x = vpx.at<double>(0, 0) / vpx.at<double>(0, 2);
-                    auto vp_y = vpx.at<double>(0, 1) / vpx.at<double>(0, 2);
+                    auto vp_x = vpx.at<T>(0, 0) / vpx.at<T>(0, 2);
+                    auto vp_y = vpx.at<T>(0, 1) / vpx.at<T>(0, 2);
                     //manh_vps = [vpx(1)+u0 vpx(2)+v0; hvp(id_finite(1),1) hvp(id_finite(1),2); zvp(1) zvp(2)];
-                    manh_vps.emplace_back(cv::Vec2d{vp_x + u0, vp_y + v0});
+                    manh_vps.emplace_back(cv::Vec<T, 2>{vp_x + u0, vp_y + v0});
                     manh_vps.emplace_back(*id_finite);
                     manh_vps.emplace_back(zvp);
                     confident = 2;

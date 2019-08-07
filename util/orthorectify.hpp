@@ -16,19 +16,19 @@ typedef struct
     cv::Mat H;
 } Transform;
 
-template <typename T, std::size_t N>
+template <typename T, std::size_t N, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline auto polygon_area(const std::array<cv::Point_<T>, N> &polygon) -> T
 {
 
-    double area = 0.0;
+    T area = 0.0;
     //int num_points = polygon.size();
     for (int i = 0; i < N; ++i)
     {
-        double x1 = polygon[i].x;
-        double y1 = polygon[i].y;
+        auto x1 = polygon[i].x;
+        auto y1 = polygon[i].y;
 
-        double x2 = polygon[(i + 1) % N].x;
-        double y2 = polygon[(i + 1) % N].y;
+        auto x2 = polygon[(i + 1) % N].x;
+        auto y2 = polygon[(i + 1) % N].y;
 
         area += x1 * y2 - x2 * y1;
     }
@@ -38,16 +38,17 @@ static inline auto polygon_area(const std::array<cv::Point_<T>, N> &polygon) -> 
     return area / 2;
 }
 
-void orthorectify(
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void orthorectify(
     const cv::Mat &img,
-    const std::vector<cv::Vec2d> &hvps,
+    const std::vector<cv::Vec<T, 2>> &hvps,
     const std::vector<std::vector<int>> &hvp_groups,
-    const cv::Vec2d &zenith,
+    const cv::Vec<T, 2> &zenith,
     const std::vector<int> &z_group,
-    const std::vector<cv::Vec4d> &lines,
+    const std::vector<cv::Vec<T, 4>> &lines,
     int n_lines_min,
     const cv::Mat &K,
-    const cv::Vec3d &horizon_line,
+    const cv::Vec<T, 3> &horizon_line,
     const Params &params,
     std::vector<Transform> &transforms)
 {
@@ -70,13 +71,13 @@ void orthorectify(
     }
 
     cv::Mat Ki;
-    cv::Vec3d pp_zen_line;
-    cv::Vec3d vp_zen{zenith[0], zenith[1], 1};
+    cv::Vec<T, 3> pp_zen_line;
+    cv::Vec<T, 3> vp_zen{zenith[0], zenith[1], 1};
     cv::Mat y;
     if (!K.empty())
     {
         Ki = K.inv();
-        cv::Vec2d pp{K.at<double>(0, 2), K.at<double>(1, 2)};
+        cv::Vec<T, 2> pp{K.at<double>(0, 2), K.at<double>(1, 2)};
         pp_zen_line = line_hmg_from_two_points(pp, zenith);
 
         y = Ki * vp_zen;
@@ -91,22 +92,22 @@ void orthorectify(
     for (int i = 0; i < hvps.size(); ++i)
     {
         auto hvp = hvps[i];
-        cv::Vec3d hvp_hom{hvp[0], hvp[1], 1};
+        cv::Vec<T, 3> hvp_hom{hvp[0], hvp[1], 1};
         auto vp_zen_line = line_hmg_from_two_points(hvp, zenith);
         if (vp_zen_line[0] < 0)
         {
             vp_zen_line = -vp_zen_line;
         }
-        cv::Vec2d zen_line_normal{vp_zen_line[0], vp_zen_line[1]};
+        cv::Vec<T, 2> zen_line_normal{vp_zen_line[0], vp_zen_line[1]};
         zen_line_normal /= cv::norm(zen_line_normal);
 
-        std::vector<cv::Vec2d> centroids;
+        std::vector<cv::Vec<T, 2>> centroids;
         centroids.reserve(n_lines);
-        std::vector<cv::Vec2d> lines_dirs;
+        std::vector<cv::Vec<T, 2>> lines_dirs;
         lines_dirs.reserve(n_lines);
 
-        cv::Vec2d proj_min{1, 1};
-        cv::Vec2d proj_max{-1, -1};
+        cv::Vec<T, 2> proj_min{1, 1};
+        cv::Vec<T, 2> proj_max{-1, -1};
         cv::Vec2i n_lines_zen{0, 0};
         cv::Vec2i idmax{0, 0};
         cv::Vec2i idmin{0, 0};
@@ -114,8 +115,8 @@ void orthorectify(
         int c = 0;
         for (const auto &line : lines)
         {
-            cv::Vec2d p1{line[0], line[1]};
-            cv::Vec2d p2{line[2], line[3]};
+            cv::Vec<T, 2> p1{line[0], line[1]};
+            cv::Vec<T, 2> p2{line[2], line[3]};
             auto centroid = p1 + p2;
             centroid /= 2;
             auto lines_dir = p1 - p2;
@@ -205,9 +206,9 @@ void orthorectify(
                     {
                         continue;
                     }
-                    cv::Vec3d p1_homo{lines[j][0], lines[j][1], 1};
+                    cv::Vec<T, 3> p1_homo{lines[j][0], lines[j][1], 1};
                     auto p1_dot = vp_zen_line.dot(p1_homo);
-                    cv::Vec3d p2_homo{lines[j][2], lines[j][3], 1};
+                    cv::Vec<T, 3> p2_homo{lines[j][2], lines[j][3], 1};
                     auto p2_dot = vp_zen_line.dot(p2_homo);
                     auto min_dot = lines_dirs[j].dot(lzmin_v);
                     auto max_dot = lines_dirs[j].dot(lzmax_v);
@@ -289,7 +290,7 @@ void orthorectify(
                     {
                         auto lhmin = line_hmg_from_two_points(hvp, centroids[idmin2]);
                         auto lhmax = line_hmg_from_two_points(hvp, centroids[idmax2]);
-                        std::vector<cv::Vec2d> c;
+                        std::vector<cv::Vec<T, 2>> c;
                         c.reserve(4);
                         c.emplace_back(line_hmg_intersect(lhmin, lzmin));
                         c.emplace_back(line_hmg_intersect(lhmax, lzmin));
@@ -301,7 +302,7 @@ void orthorectify(
                         auto idll = ids[1 - (c[ids[0]][1] > c[ids[1]][1])];
                         auto up = (idll == ((idul % 4) + 1));
                         auto idc = idul;
-                        std::array<cv::Point2d, 4> corners;
+                        std::array<cv::Point_<T>, 4> corners;
                         for (int j = 0; j < 4; ++j)
                         {
                             corners[j] = c[idc];
@@ -334,12 +335,13 @@ void orthorectify(
                         auto AR = s1 / s2;
                         auto w = std::sqrt(A / AR);
                         auto h = AR * w;
-                        std::array<cv::Point2d, 4> pointsR{
-                            cv::Point2d{M[0] - w / 2, M[1] - h / 2},
-                            cv::Point2d{M[0] - w / 2, M[1] + h / 2},
-                            cv::Point2d{M[0] + w / 2, M[1] + h / 2},
-                            cv::Point2d{M[0] + w / 2, M[1] - h / 2}};
+                        std::array<cv::Point_<T>, 4> pointsR{
+                            cv::Point_<T>{M[0] - w / 2, M[1] - h / 2},
+                            cv::Point_<T>{M[0] - w / 2, M[1] + h / 2},
+                            cv::Point_<T>{M[0] + w / 2, M[1] + h / 2},
+                            cv::Point_<T>{M[0] + w / 2, M[1] - h / 2}};
                         transform.H = cv::findHomography(corners, pointsR, cv::noArray(), cv::LMEDS);
+                        transform.H.convertTo(transform.H, CV_64FC1);
                         if (params.debug_fileid != nullptr)
                         {
                             fprintf(params.debug_fileid, "M [%f %f]\n", M[0], M[1]);

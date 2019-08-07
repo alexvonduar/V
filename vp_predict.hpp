@@ -24,19 +24,20 @@ end
 #endif
 
 //function [sc, horvps_homo, horgroups] = vp_predict(lines_homo, initialIds, horizon_homo, params)
-static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
-                                const std::vector<int> &initialIds,
-                                const cv::Vec3d &horizon_homo,
-                                const Params &params,
-                                std::vector<cv::Vec3d> &horvps_homo,
-                                std::vector<std::vector<int>> &horgroups
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline T vp_predict(const std::vector<cv::Vec<T, 3>> &lines_homo,
+                           const std::vector<int> &initialIds,
+                           const cv::Vec<T, 3> &horizon_homo,
+                           const Params &params,
+                           std::vector<cv::Vec<T, 3>> &horvps_homo,
+                           std::vector<std::vector<int>> &horgroups
 
 )
 {
     // compute intersections between the line segments and the HL candidate
-    std::vector<cv::Vec3d> inter_homo;
+    std::vector<cv::Vec<T, 3>> inter_homo;
     inter_homo.reserve(initialIds.size());
-    std::vector<cv::Vec2d> inter_pts;
+    std::vector<cv::Vec<T, 2>> inter_pts;
     inter_pts.reserve(initialIds.size());
     for (const auto &id : initialIds)
     {
@@ -50,7 +51,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
             inter *= -1;
         }
         //inter_pts = bsxfun(@rdivide, inter_homo(1:2,:), inter_homo(3,:));
-        inter_pts.emplace_back(cv::Vec2d{inter[0] / inter[2], inter[1] / inter[2]});
+        inter_pts.emplace_back(cv::Vec<T, 2>{inter[0] / inter[2], inter[1] / inter[2]});
         inter_homo.emplace_back(inter);
     }
 
@@ -66,7 +67,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
 
     //max_modes = [];
     //p = [];
-    std::vector<double> p;
+    std::vector<T> p;
     p.reserve(inter_pts.size());
     //a = horizon_homo(1);
     auto a = horizon_homo[0];
@@ -75,10 +76,10 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
     //c = horizon_homo(3);
     auto c = horizon_homo[2];
     //A_hmg = cross(horizon_homo,[b -a 0]);
-    auto A_hmg = horizon_homo.cross(cv::Vec3d{b, -a, 0});
+    auto A_hmg = horizon_homo.cross(cv::Vec<T, 3>{b, -a, 0});
     //A(1) = A_hmg(1)/A_hmg(3);
     //A(2) = A_hmg(2)/A_hmg(3);
-    cv::Vec2d A{A_hmg[0] / A_hmg[2], A_hmg[1] / A_hmg[2]};
+    cv::Vec<T, 2> A{A_hmg[0] / A_hmg[2], A_hmg[1] / A_hmg[2]};
     //rho = abs(c)/sqrt(a^2+b^2);
     auto rho = std::abs(c) / std::sqrt(a * a + b * b);
     //rho2 = sqrt(inter_pts(1,:).*inter_pts(1,:)+inter_pts(2,:).*inter_pts(2,:));
@@ -100,7 +101,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
     //dt = [b -a]*(inter_pts-A'*ones(1,size(inter_pts,2)));
     //I = find(dt < 0);
     //p(I) = -p(I);
-    cv::Vec2d ba{b, -a};
+    cv::Vec<T, 2> ba{b, -a};
     for (const auto &pts : inter_pts)
     {
         auto rho2 = cv::norm(pts);
@@ -146,12 +147,12 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
 
     //[N,edges] = histcounts(p,params.L_vp);
     cv::Mat N;
-    std::vector<double> edges;
+    std::vector<T> edges;
     histcounts(p, params.L_vp, nullptr, N, edges);
 
     //[max_modes, H] = mnf_modes(N,400);
     std::vector<std::pair<int, int>> max_modes;
-    std::vector<double> H;
+    std::vector<T> H;
     mnf_modes(N, 400, max_modes, H);
     //if isempty(max_modes)
     //    max_modes = [];
@@ -169,10 +170,10 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
     ///std::vector<std::vector<int>> horgroups;
     horgroups.reserve(max_modes.size());
     //scores = [];
-    std::vector<double> scores;
+    std::vector<T> scores;
     scores.reserve(max_modes.size());
     //horvps_homo = [];
-    ///std::vector<cv::Vec3d> horvps_homo;
+    ///std::vector<cv::Vec<T, 3>> horvps_homo;
     horvps_homo.reserve(max_modes.size());
     //for i = 1:size(max_modes,1)
     for (const auto mode : max_modes)
@@ -257,7 +258,7 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
         }
     }
 
-    double sc = 0;
+    T sc = 0;
     scores.clear();
     horgroups.clear();
     //if isempty(max_modes)
@@ -287,16 +288,16 @@ static inline double vp_predict(const std::vector<cv::Vec3d> &lines_homo,
 
         // sorted by score
         //[scores, sortIds] = sort(scores, 'descend');
-        std::vector<std::pair<double, int>> index;
+        std::vector<std::pair<T, int>> index;
         index.reserve(scores.size());
         for (int i = 0; i < scores.size(); ++i)
         {
-            index.emplace_back(std::pair<double, int>{scores[i], i});
+            index.emplace_back(std::pair<T, int>{scores[i], i});
         }
         std::sort(index.begin(), index.end(), [](const auto &a, const auto &b) { return a.first > b.first; });
         //horvps_homo = horvps_homo(:,sortIds);
         //horgroups = horgroups(sortIds);
-        std::vector<cv::Vec3d> horvps_homo_sorted;
+        std::vector<cv::Vec<T, 3>> horvps_homo_sorted;
         horvps_homo_sorted.reserve(horvps_homo.size());
         std::vector<std::vector<int>> horgroups_sorted;
         horgroups_sorted.reserve(horgroups.size());

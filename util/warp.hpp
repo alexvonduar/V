@@ -8,10 +8,10 @@
 static inline void align_rect(const cv::Mat &H, const cv::Rect &rect, cv::Mat &shift, cv::Size &sz, const cv::Size &max_sz = cv::Size())
 {
     std::vector<cv::Point2f> corners{
-        cv::Point2f{rect.x, rect.y},
-        cv::Point2f{rect.x + rect.width, rect.y},
-        cv::Point2f{rect.x + rect.width, rect.y + rect.height},
-        cv::Point2f{rect.x, rect.y + rect.height}};
+        cv::Point2f{(float)rect.x, (float)rect.y},
+        cv::Point2f{(float)rect.x + rect.width, (float)rect.y},
+        cv::Point2f{(float)rect.x + rect.width, (float)rect.y + rect.height},
+        cv::Point2f{(float)rect.x, (float)rect.y + rect.height}};
     std::vector<cv::Point2f> warped_corners(4);
     cv::perspectiveTransform(corners, warped_corners, H);
     auto _r = cv::boundingRect(warped_corners);
@@ -38,7 +38,7 @@ static inline void align_rect(const cv::Mat &H, const cv::Rect &rect, cv::Mat &s
     {
         for (auto &p : warped_corners)
         {
-            p -= cv::Point2f{_r.x, _r.y};
+            p -= cv::Point2f{(float)_r.x, (float)_r.y};
             p *= scale;
         }
         shift = cv::findHomography(corners, warped_corners, cv::noArray(), cv::LMEDS);

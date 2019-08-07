@@ -26,12 +26,13 @@ end
 geometry_homo = bsxfun(@rdivide, geometry_homo, sqrt(sum(geometry_homo.^2, 1)));
 */
 
-static inline void normalize(const cv::Vec2d &point, const int &width, const int &height, const double &focal, cv::Vec3d &npoint)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void normalize(const cv::Vec<T, 2> &point, const int &width, const int &height, const T &focal, cv::Vec<T, 3> &npoint)
 {
-    //cv::Vec2d center{double(width) / 2, double(height) / 2};
+    //cv::Vec<T, 2> center{T(width) / 2, T(height) / 2};
     //auto geometry_normalized = point - center;
     //geometry_normalized /= focal;
-    npoint = cv::Vec3d{(point[0] - ((double)width / 2.)) / focal, (point[1] - ((double)height / 2.)) / focal, 1};
+    npoint = cv::Vec<T, 3>{(point[0] - ((T)width / 2.)) / focal, (point[1] - ((T)height / 2.)) / focal, 1};
     auto norm = std::sqrt(npoint[0] * npoint[0] + npoint[1] * npoint[1] + 1);
     //npoint /= norm;
     npoint[0] /= norm;
@@ -39,14 +40,15 @@ static inline void normalize(const cv::Vec2d &point, const int &width, const int
     npoint[2] /= norm;
 }
 
-static inline void normalize(const cv::Vec4d &line, const int &width, const int &height, const double &focal, cv::Vec3d &nline)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void normalize(const cv::Vec<T, 4> &line, const int &width, const int &height, const T &focal, cv::Vec<T, 3> &nline)
 {
-    //cv::Vec4d center{double(width) / 2, double(height) / 2, double(width) / 2, double(height) / 2};
+    //cv::Vec<T, 4> center{T(width) / 2, T(height) / 2, T(width) / 2, T(height) / 2};
     //auto geometry_normalized = line - center;
     //geometry_normalized /= focal;
-    cv::Vec3d x1, x2;
-    normalize(cv::Vec2d{line[0], line[1]}, width, height, focal, x1);
-    normalize(cv::Vec2d{line[2], line[3]}, width, height, focal, x2);
+    cv::Vec<T, 3> x1, x2;
+    normalize(cv::Vec<T, 2>{line[0], line[1]}, width, height, focal, x1);
+    normalize(cv::Vec<T, 2>{line[2], line[3]}, width, height, focal, x2);
     auto geometry_homo = x1.cross(x2);
     if ((geometry_homo[1] + std::nextafter(0.0, 1.0)) < 0)
     {

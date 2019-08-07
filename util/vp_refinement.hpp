@@ -6,10 +6,11 @@
 #include "util/lines_normal.hpp"
 
 //function vps_homo = vp_refinement(lines_homo, vps_homo, horizon_homo, params) % from [Zhai et al.]
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void vp_refinement(
-    const std::vector<cv::Vec3d> &lines_homo,
-    std::vector<cv::Vec3d> &vps_homo,
-    const cv::Vec3d &horizon_homo,
+    const std::vector<cv::Vec<T, 3>> &lines_homo,
+    std::vector<cv::Vec<T, 3>> &vps_homo,
+    const cv::Vec<T, 3> &horizon_homo,
     const Params &params)
 {
     //rng(1)
@@ -25,7 +26,7 @@ static inline void vp_refinement(
         for (int it = 0; it < niters; ++it)
         {
             //good_ids = find(abs(vps_homo(:,ig)'*lines_homo) < inlier_thr)';
-            std::vector<cv::Vec3d> good_lines;
+            std::vector<cv::Vec<T, 3>> good_lines;
             good_lines.reserve(lines_homo.size());
             for (const auto &l : lines_homo)
             {

@@ -6,7 +6,8 @@
 #include "default_params.hpp"
 
 //function [score, horgroup] = vp_score(vp_homo, lines_homo, score_function)
-static inline double vp_score(const cv::Vec3d &vp_homo, const std::vector<cv::Vec3d> &lines_homo,
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline double vp_score(const cv::Vec<T, 3> &vp_homo, const std::vector<cv::Vec<T, 3>> &lines_homo,
                               const Params &params,
                               //double (*score_function)(const double &, const double &),
                               //double& score,
@@ -25,7 +26,7 @@ static inline double vp_score(const cv::Vec3d &vp_homo, const std::vector<cv::Ve
     ///theta_mat.reserve(lines_homo.size());
     ///std::vector<double> score_mat;
     ///score_mat.reserve(lines_homo.size());
-    double score = 0.;
+    T score = 0.;
     for (int i = 0; i < lines_homo.size(); ++i)
     {
         auto cos = vp_homo.dot(lines_homo[i]);

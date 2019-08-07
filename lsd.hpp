@@ -12,7 +12,8 @@ extern "C"
 }
 #endif
 
-static inline void lsd_detect(const cv::Mat &img, std::vector<cv::Vec4d> &lines)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void lsd_detect(const cv::Mat &img, std::vector<cv::Vec<T, 4>> &lines)
 {
     cv::Mat img_double;
     cv::cvtColor(img, img_double, cv::COLOR_BGR2GRAY);
@@ -34,12 +35,12 @@ static inline void lsd_detect(const cv::Mat &img, std::vector<cv::Vec4d> &lines)
         auto y2 = out->values[n * i + 3];
         if ((x2 < x1) or ((x1 == x2) and (y2 < y1)))
         {
-            cv::Vec4d line{x2, y2, x1, y1};
+            cv::Vec<T, 4> line{x2, y2, x1, y1};
             lines.emplace_back(line);
         }
         else
         {
-            cv::Vec4d line{x1, y1, x2, y2};
+            cv::Vec<T, 4> line{x1, y1, x2, y2};
             lines.emplace_back(line);
         }
     }

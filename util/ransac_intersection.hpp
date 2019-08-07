@@ -25,15 +25,17 @@
 
 #include <opencv2/opencv.hpp>
 
-typedef struct
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+struct _RANSAC_Parameter
 {
     int iterNum;        //50;
-    double thInlrRatio; // .02;
-    double thDist;      // = sind(opt.theta_con);
-} RANSAC_Parameter;
+    T thInlrRatio; // .02;
+    T thDist;      // = sind(opt.theta_con);
+};
 
 //function [M, index] = randIndex(lines_homo, maxIndex,len)
-void randIndex(const std::vector<cv::Vec3d> &lines_homo, const int &maxIndex, const int &len, cv::Vec3d &M, std::vector<int> &index)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void randIndex(const std::vector<cv::Vec<T, 3>> &lines_homo, const int &maxIndex, const int &len, cv::Vec<T, 3> &M, std::vector<int> &index)
 {
     //INDEX = RANDINDEX(MAXINDEX,LEN)
     //   randomly, non-repeatedly select LEN integers from 1:MAXINDEX
@@ -57,14 +59,16 @@ void randIndex(const std::vector<cv::Vec3d> &lines_homo, const int &maxIndex, co
 }
 
 //function d = calcdist(M, X)
-double calcdist(const cv::Vec3d &M, const cv::Vec3d &X)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline T calcdist(const cv::Vec<T, 3> &M, const cv::Vec<T, 3> &X)
 {
     //d = abs(M'*X);
     return std::abs(M.dot(X));
 }
 
 //function [M, inlierIdx] = ransac_intersection(lines_homo, ransacCoef)
-void ransac_intersection(const std::vector<cv::Vec3d> &lines_homo, const RANSAC_Parameter &ransacCoef, cv::Vec3d &M, std::vector<int> &inlierIdx)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void ransac_intersection(const std::vector<cv::Vec<T, 3>> &lines_homo, const struct _RANSAC_Parameter<T> &ransacCoef, cv::Vec<T, 3> &M, std::vector<int> &inlierIdx)
 {
     //rng(1);
 
@@ -92,11 +96,11 @@ void ransac_intersection(const std::vector<cv::Vec3d> &lines_homo, const RANSAC_
     std::vector<int> inlrNum; //(iterNum, 0);
     inlrNum.reserve(iterNum);
     //fLib = cell(1,iterNum);
-    std::vector<cv::Vec3d> fLib;
+    std::vector<cv::Vec<T, 3>> fLib;
     fLib.reserve(iterNum);
 
     //for p = 1:iterNum
-    for (int p = 0; p < iterNum; )//++p)
+    for (int p = 0; p < iterNum;) //++p)
     {
         // 1. fit using random points
         //M = randIndex(lines_homo, ptNum, minPtNum);

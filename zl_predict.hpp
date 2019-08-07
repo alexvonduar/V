@@ -59,12 +59,20 @@ end
 */
 
 //function zl = zl_predict(ls, dist_max, u0, v0, width, height, params);
-static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dist_max, const double &u0, const double &v0, const int &width, const int &height, const Params &params, std::vector<double> &zl)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void zl_predict(const std::vector<cv::Vec<T, 4>> ls,
+                              const T &dist_max,
+                              const T &u0,
+                              const T &v0,
+                              const int &width,
+                              const int &height,
+                              const Params &params,
+                              std::vector<T> &zl)
 {
     auto num_lines = ls.size();
-    std::vector<double> hist;
+    std::vector<T> hist;
     hist.reserve(num_lines);
-    std::vector<double> ang;
+    std::vector<T> ang;
     ang.reserve(num_lines);
     //hist = [];
     //ang = [];
@@ -91,7 +99,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
         if (std::abs(angle - CV_PI / 2) < params.theta_v)
         {
             auto lm = line_hmg_from_two_points(l);
-            auto dist = std::abs(lm.dot(cv::Vec3d{double(width) / 2, double(height) / 2, 1.}));
+            auto dist = std::abs(lm.dot(cv::Vec<T, 3>{T(width) / 2, T(height) / 2, 1.}));
             if (dist < dist_max)
             {
                 hist.emplace_back(angle);
@@ -101,7 +109,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
     }
     //[N,edges0] = histcounts(hist,(pi/2-pi/8):pi/180:(pi/2+pi/8));
     cv::Mat N;
-    std::vector<double> edges0;
+    std::vector<T> edges0;
     float range[] = {CV_PI * 3 / 8, CV_PI * 5 / 8};
     //--cv::calcHist(hist, std::vector<int>{0}, cv::noArray(), N, std::vector<int>{45}, std::vector<float>{CV_PI * 3 / 8, CV_PI * 5 / 8}, false);
     histcounts(hist, 45, range, N, edges0);
@@ -137,7 +145,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
     }
 
     //edges = (edges0(1:end-1)+edges0(2:end))/2;
-    std::vector<double> edges;
+    std::vector<T> edges;
     edges.reserve(N.cols);
     for (int i = 0; i < N.cols; ++i)
     {
@@ -146,7 +154,7 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
 
     //[max_modes, H] = mnf_modes(N, 1);
     std::vector<std::pair<int, int>> max_modes;
-    std::vector<double> H;
+    std::vector<T> H;
     mnf_modes(N, 1, max_modes, H);
 
     //if isempty(max_modes)
@@ -164,11 +172,11 @@ static inline void zl_predict(const std::vector<cv::Vec4d> ls, const double &dis
     }
     else
     {
-        std::vector<std::pair<double, int>> sH;
+        std::vector<std::pair<T, int>> sH;
         sH.reserve(H.size());
         for (int i = 0; i < H.size(); ++i)
         {
-            sH.emplace_back(std::pair<double, int>{H[i], i});
+            sH.emplace_back(std::pair<T, int>{H[i], i});
         }
         std::sort(sH.begin(), sH.end(), [](const auto &a, const auto &b) { return a.first > b.first; });
         std::vector<std::pair<int, int>> s_modes;

@@ -7,25 +7,27 @@
 #include "default_params.hpp"
 #include "vp_predict.hpp"
 
-typedef struct
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+struct _Candidate
 {
-    cv::Vec3d horizon_homo;
+    cv::Vec<T, 3> horizon_homo;
     double sc;
-    std::vector<cv::Vec3d> hvp_homo;
+    std::vector<cv::Vec<T, 3>> hvp_homo;
     std::vector<std::vector<int>> hvp_groups;
-} Candidate;
+}; // Candidate;
 
 /// function [hl_homo, ortho_ modes_left, modes_right, results] = hl_score(hl_samp, infiniteVPs_homo, seglines, xres, yres, focal, zeniths_homo, zengroups, params)
 //function [hl_homo, results] = hl_score(hl_samp, ls_homo, z_homo, params)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void hl_score(
-    const std::vector<cv::Vec3d> &hl_samp,
-    const std::vector<cv::Vec3d> &ls_homo,
-    const cv::Vec3d &z_homo,
+    const std::vector<cv::Vec<T, 3>> &hl_samp,
+    const std::vector<cv::Vec<T, 3>> &ls_homo,
+    const cv::Vec<T, 3> &z_homo,
     const Params &params,
-    Candidate &result)
+    _Candidate<T> &result)
 {
     //candidates = repmat(struct(), size(hl_samp,2),1);
-    std::vector<Candidate> candidates;
+    std::vector<_Candidate<T>> candidates;
     candidates.reserve(hl_samp.size());
     //nhvps = [];
     std::vector<int> nhvps;
@@ -47,11 +49,11 @@ static inline void hl_score(
             }
             fprintf(params.debug_fileid, "\n");
         }
-        Candidate candidate;
+        _Candidate<T> candidate;
         //candidates(i).horizon_homo = hl_samp(:,i);
         candidate.horizon_homo = samp;
         //[candidates(i).sc, candidates(i).hvp_homo, hvp_groups] = vp_predict(ls_homo(:,helpfulIds), initialIds, candidates(i).horizon_homo, params);
-        std::vector<cv::Vec3d> helpfulLines;
+        std::vector<cv::Vec<T, 3>> helpfulLines;
         helpfulLines.reserve(helpfulIds.size());
         std::vector<int> initialIds;
         initialIds.reserve(helpfulIds.size());
@@ -87,7 +89,7 @@ static inline void hl_score(
     ///[~,maxHorCandidateId] = max(horCandidateScores);
     ///hl_homo = candidates(maxHorCandidateId).horizon_homo;
     int best = 0;
-    double sc = 0;
+    T sc = 0;
     for (int i = 0; i < candidates.size(); ++i)
     {
         if (candidates[i].sc > sc)

@@ -13,8 +13,8 @@ typedef struct
     std::string winName;
 } DrawData;
 
-template <typename T>
-static inline void draw(const std::vector<cv::Vec<T, 4>> &lines, const cv::Scalar *pcolor, const T &scale, cv::Mat &img)
+template <typename T1, typename T2, typename Dummy = typename std::enable_if<std::is_floating_point<T2>::value>::type>
+static inline void draw(const std::vector<cv::Vec<T1, 4>> &lines, const cv::Scalar *pcolor, const T2 &scale, cv::Mat &img)
 {
     cv::Scalar color;
     if (pcolor == nullptr)
@@ -28,8 +28,8 @@ static inline void draw(const std::vector<cv::Vec<T, 4>> &lines, const cv::Scala
 
     for (const auto &line : lines)
     {
-        auto p1 = cv::Point_<T>{line[0], line[1]};
-        auto p2 = cv::Point_<T>{line[2], line[3]};
+        auto p1 = cv::Point_<T1>{line[0], line[1]};
+        auto p2 = cv::Point_<T1>{line[2], line[3]};
         if (scale != 1)
         {
             p1 *= scale;
@@ -63,7 +63,12 @@ void on_vscroll(int pos, void *userdata)
     cv::imshow(p->winName, winImage);
 }
 
-static inline void draw(const std::string &win_name, const cv::Mat &img, const std::vector<cv::Vec4d> &lines, const cv::Scalar &_color, const bool &do_scale = false)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void draw(const std::string &win_name,
+                        const cv::Mat &img,
+                        const std::vector<cv::Vec<T, 4>> &lines,
+                        const cv::Scalar &_color,
+                        const bool &do_scale = false)
 {
     DrawData data;
     data.winName = win_name;
@@ -73,10 +78,10 @@ static inline void draw(const std::string &win_name, const cv::Mat &img, const s
     cv::Scalar color = _color;
     if (do_scale)
     {
-        double scale = 1;
+        float scale = 1;
         if (data.winH < data.img.rows)
         {
-            scale = (double)(900) / data.img.rows;
+            scale = (float)(900) / data.img.rows;
         }
         cv::resize(data.img, data.img, cv::Size(), scale, scale, cv::INTER_AREA);
         draw(lines, &color, scale, data.img);

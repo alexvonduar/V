@@ -6,13 +6,13 @@
 // implement MATLAB like histcounts function with
 // OpenCV calcHist function
 
-template <typename T>
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void histcounts(
     const std::vector<T> &v,
     const int &nbins,
     const float *default_range,
     cv::MatND &hist,
-    std::vector<double> &edges)
+    std::vector<T> &edges)
 {
     edges.clear();
     edges.reserve(nbins + 1);
@@ -31,8 +31,8 @@ static inline void histcounts(
     int histSize[] = {nbins};
     float range[] = {0., 0.};
     const float *ranges[] = {range};
-    double delta;
-    double min, max;
+    T delta;
+    T min, max;
     if (default_range == nullptr)
     {
         auto minmax = std::minmax_element(v.begin(), v.end());

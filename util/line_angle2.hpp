@@ -4,7 +4,8 @@
 #include <opencv2/opencv.hpp>
 
 //function angle = line_angle2(line)
-double line_angle2(const cv::Vec4d &line)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+T line_angle2(const cv::Vec<T, 4> &line)
 {
     auto x1 = line[0];
     auto y1 = line[1];
@@ -17,7 +18,8 @@ double line_angle2(const cv::Vec4d &line)
     //end
 }
 
-double line_angle2(const cv::Vec2d &p1, const cv::Vec2d &p2)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+T line_angle2(const cv::Vec<T, 2> &p1, const cv::Vec<T, 2> &p2)
 {
     auto x1 = p1[0];
     auto y1 = p1[1];

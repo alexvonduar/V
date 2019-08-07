@@ -6,18 +6,19 @@
 #include "util/line_size.hpp"
 
 //function seglines = ls_filter(thres_aligned, length_t, lsd)
-void ls_filter(const double &thres_aligned,
-               const double &length_t,
-               const std::vector<cv::Vec4d> &lsd,
-               std::vector<cv::Vec4d> &seglines)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+void ls_filter(const T &thres_aligned,
+               const T &length_t,
+               const std::vector<cv::Vec<T, 4>> &lsd,
+               std::vector<cv::Vec<T, 4>> &seglines)
 {
     auto num_lines = lsd.size();
-    std::vector<cv::Vec4d> _seglines = lsd;
-    std::vector<double> L0;
+    std::vector<cv::Vec<T, 4>> _seglines = lsd;
+    std::vector<T> L0;
     L0.reserve(num_lines);
-    std::vector<cv::Vec2d> seglinesC;
+    std::vector<cv::Vec<T, 2>> seglinesC;
     seglinesC.reserve(num_lines);
-    std::vector<cv::Vec2d> seglinesJ;
+    std::vector<cv::Vec<T, 2>> seglinesJ;
     seglinesJ.reserve(num_lines);
     //L0 = line_size(seglines);
     //seglinesC(1:size(seglines,1),1) = (seglines(:,3)+seglines(:,1))/2;
@@ -27,8 +28,8 @@ void ls_filter(const double &thres_aligned,
     for (const auto &ls : _seglines)
     {
         auto len = line_size(ls);
-        seglinesC.emplace_back(cv::Vec2d{(ls[2] + ls[0]) / 2, (ls[3] + ls[1]) / 2});
-        seglinesJ.emplace_back(cv::Vec2d{(ls[1] - ls[3]) / len, (ls[2] - ls[0]) / len});
+        seglinesC.emplace_back(cv::Vec<T, 2>{(ls[2] + ls[0]) / 2, (ls[3] + ls[1]) / 2});
+        seglinesJ.emplace_back(cv::Vec<T, 2>{(ls[1] - ls[3]) / len, (ls[2] - ls[0]) / len});
         L0.emplace_back(len);
     }
     //[L0, I] = sort(L0, 'descend');
@@ -36,18 +37,18 @@ void ls_filter(const double &thres_aligned,
     //seglinesC = seglinesC(I,:);
     //seglinesJ = seglinesJ(I,:);
     {
-        std::vector<std::pair<double, int>> index;
+        std::vector<std::pair<T, int>> index;
         index.reserve(L0.size());
         for (int i = 0; i < L0.size(); ++i)
         {
-            index.emplace_back(std::pair<double, int>{L0[i], i});
+            index.emplace_back(std::pair<T, int>{L0[i], i});
         }
         std::sort(index.begin(), index.end(), [](const auto &a, const auto &b) { return a.first > b.first; });
-        std::vector<cv::Vec4d> seglines_sorted;
+        std::vector<cv::Vec<T, 4>> seglines_sorted;
         seglines_sorted.reserve(num_lines);
-        std::vector<cv::Vec2d> seglinesC_sorted;
+        std::vector<cv::Vec<T, 2>> seglinesC_sorted;
         seglinesC_sorted.reserve(num_lines);
-        std::vector<cv::Vec2d> seglinesJ_sorted;
+        std::vector<cv::Vec<T, 2>> seglinesJ_sorted;
         seglinesJ_sorted.reserve(num_lines);
         for (int i = 0; i < index.size(); ++i)
         {
@@ -90,8 +91,8 @@ void ls_filter(const double &thres_aligned,
             {
                 continue;
             }
-            cv::Vec2d p1{_seglines[j][0], _seglines[j][1]};
-            cv::Vec2d p2{_seglines[j][2], _seglines[j][3]};
+            cv::Vec<T, 2> p1{_seglines[j][0], _seglines[j][1]};
+            cv::Vec<T, 2> p2{_seglines[j][2], _seglines[j][3]};
             p1[0] -= C[0];
             p1[1] -= C[1];
             p2[0] -= C[0];

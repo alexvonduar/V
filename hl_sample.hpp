@@ -9,23 +9,23 @@
 #include "util/atand.hpp"
 
 //function [samp_homo, samp_left, samp_right] = hl_sample(zenith_homo, modes_homo, modes_offset, modes_left, modes_right, H, u0, v0, width, height, focal, params)
-
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void hl_sample(
-    const cv::Vec3d &zenith_homo,
-    const std::vector<cv::Vec3d> &modes_homo,
-    const std::vector<double> &modes_offset,
-    const std::vector<double> &modes_left,
-    const std::vector<double> &modes_right,
-    const std::vector<double> &H,
-    const double &u0,
-    const double &v0,
+    const cv::Vec<T, 3> &zenith_homo,
+    const std::vector<cv::Vec<T, 3>> &modes_homo,
+    const std::vector<T> &modes_offset,
+    const std::vector<T> &modes_left,
+    const std::vector<T> &modes_right,
+    const std::vector<T> &H,
+    const T &u0,
+    const T &v0,
     const int &width,
     const int &height,
-    const double &focal,
+    const T &focal,
     const Params &params,
-    std::vector<cv::Vec3d> &samp_homo,
-    std::vector<double> &samp_left,
-    std::vector<double> &samp_right)
+    std::vector<cv::Vec<T, 3>> &samp_homo,
+    std::vector<T> &samp_left,
+    std::vector<T> &samp_right)
 {
     //rng(1) % fix random seed
     cv::RNG rng(std::chrono::system_clock::now().time_since_epoch().count());
@@ -59,7 +59,7 @@ static inline void hl_sample(
                 //id = min(find(uniformrnd >= draw));
                 //orand = x(id)*height + modes_offset(i);
                 auto id = rng.uniform(0, 100000);
-                orand = double(4.) * id / 100000. - 2. + modes_offset[i];
+                orand = T(4.) * id / 100000. - 2. + modes_offset[i];
                 //std::cout << j << ": " << id << " " << orand << std::endl;
             }
             else
@@ -74,9 +74,9 @@ static inline void hl_sample(
             orand = -1.9 + (3.8 * j) / (nsamp - 1) + modes_offset[i];
 #endif
             //mnf_center = [u0+orand*cos(-tilt+pi/2) v0+orand*sin(-tilt+pi/2)];
-            cv::Vec2d mnf_center{u0 + orand * std::cos(-tilt + CV_PI / 2), v0 + orand * std::sin(-tilt + CV_PI / 2)};
+            cv::Vec<T, 2> mnf_center{u0 + orand * std::cos(-tilt + CV_PI / 2), v0 + orand * std::sin(-tilt + CV_PI / 2)};
             //hmnf = line_hmg_from_two_points(mnf_center, mnf_center+[cos(-tilt) sin(-tilt)]);
-            auto hmnf = line_hmg_from_two_points(mnf_center, cv::Vec2d{std::cos(-tilt) + mnf_center[0], std::sin(-tilt) + mnf_center[1]});
+            auto hmnf = line_hmg_from_two_points(mnf_center, cv::Vec<T, 2>{std::cos(-tilt) + mnf_center[0], std::sin(-tilt) + mnf_center[1]});
             if (0 and params.debug_fileid != nullptr)
             {
                 fprintf(params.debug_fileid, "%d: %.1079g [%.1079g %.1079g] -> [%.1079g %.1079g %.1079g]\n", j, orand, mnf_center[0], mnf_center[1], hmnf[0], hmnf[1], hmnf[2]);
@@ -88,9 +88,9 @@ static inline void hl_sample(
             auto right = (-hmnf[0] * width - hmnf[2]) / hmnf[1];
             samp_right.emplace_back(right);
             //mode_seg = [0, samp_left(end), width, samp_right(end)];
-            cv::Vec4d mode_seg{0, left, (double)width, right};
+            cv::Vec<T, 4> mode_seg{0, left, (T)width, right};
             //samp_homo(1:3,end+1) = normalize(mode_seg, width, height, focal);
-            cv::Vec3d nline;
+            cv::Vec<T, 3> nline;
             normalize(mode_seg, width, height, focal, nline);
             samp_homo.emplace_back(nline);
             //end

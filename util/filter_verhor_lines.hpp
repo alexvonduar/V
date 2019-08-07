@@ -6,8 +6,9 @@
 #include "default_params.hpp"
 
 //function lines_id = filter_verhor_lines(ls_homo, z_homo,  params) % as in [Zhai et al. 2016]
-static inline void filter_verhor_lines(const std::vector<cv::Vec3d> &ls_homo,
-                                       const cv::Vec3d &z_homo,
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
+static inline void filter_verhor_lines(const std::vector<cv::Vec<T, 3>> &ls_homo,
+                                       const cv::Vec<T, 3> &z_homo,
                                        const Params &params,
                                        std::vector<int> &lines_id)
 {
@@ -16,10 +17,10 @@ static inline void filter_verhor_lines(const std::vector<cv::Vec3d> &ls_homo,
     //inlier_id = cos_val > sind(params.theta_verline);
     //lines_id = find(inlier_id);
     lines_id.reserve(ls_homo.size());
-    auto sind = std::sin(params.theta_verline * CV_PI / 180.);
+    T sind = std::sin(params.theta_verline * CV_PI / 180.);
     for (int i = 0; i < ls_homo.size(); ++i)
     {
-        auto cos_val = std::abs(ls_homo[i].dot(z_homo));
+        T cos_val = std::abs(ls_homo[i].dot(z_homo));
         if (cos_val > sind)
         {
             lines_id.emplace_back(i);
@@ -31,7 +32,7 @@ static inline void filter_verhor_lines(const std::vector<cv::Vec3d> &ls_homo,
     if (!params.include_infinite_hvps)
     {
         //ortho_thres = sind(params.theta_horline);
-        auto ortho_thres = std::sin(params.theta_horline * CV_PI / 180.);
+        T ortho_thres = std::sin(params.theta_horline * CV_PI / 180.);
         //lhomo = ls_homo(:,lines_id);
         //cos_val = abs(lhomo'*[-z_homo(2); z_homo(1); 0]);
         //inlier_id = cos_val > ortho_thres;

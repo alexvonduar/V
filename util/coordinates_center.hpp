@@ -4,16 +4,17 @@
 #include <opencv2/opencv.hpp>
 
 //function centered_coordinates = coordinates_center(coordinates, width, height, focal)
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void coordinates_center(
-    const std::vector<cv::Vec2d> &coordinates,
+    const std::vector<cv::Vec<T, 2>> &coordinates,
     const int &width,
     const int &height,
     const double &focal,
-    std::vector<cv::Vec2d> &centered_coordinates)
+    std::vector<cv::Vec<T, 2>> &centered_coordinates)
 {
     centered_coordinates.reserve(coordinates.size());
     //center = [width, height] / 2;
-    cv::Vec2d center{double(width) / 2, double(height) / 2};
+    cv::Vec<T, 2> center{double(width) / 2, double(height) / 2};
     //if size(coordinates, 2) == 2
     //  centered_coordinates = bsxfun(@minus, coordinates, center) / focal;
     //else
@@ -25,16 +26,17 @@ static inline void coordinates_center(
     }
 }
 
+template <typename T, typename Dummy = typename std::enable_if<std::is_floating_point<T>::value>::type>
 static inline void coordinates_center(
-    const std::vector<cv::Vec4d> &coordinates,
+    const std::vector<cv::Vec<T, 4>> &coordinates,
     const int &width,
     const int &height,
-    const double &focal,
-    std::vector<cv::Vec4d> &centered_coordinates)
+    const T &focal,
+    std::vector<cv::Vec<T, 4>> &centered_coordinates)
 {
     centered_coordinates.reserve(coordinates.size());
     //center = [width, height] / 2;
-    cv::Vec4d center{double(width) / 2, double(height) / 2, double(width) / 2, double(height) / 2};
+    cv::Vec<T, 4> center{double(width) / 2, double(height) / 2, double(width) / 2, double(height) / 2};
     //if size(coordinates, 2) == 2
     //  centered_coordinates = bsxfun(@minus, coordinates, center) / focal;
     //else

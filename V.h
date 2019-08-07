@@ -5,7 +5,7 @@
 
 #include "default_params.hpp"
 
-int V(const Params &params,
+int vp(const Params &params,
       const cv::Mat &img,
       std::vector<cv::Vec2d> &hl,
       std::vector<cv::Vec2d> &hvps,
